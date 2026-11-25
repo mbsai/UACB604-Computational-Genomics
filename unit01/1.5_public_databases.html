@@ -1,0 +1,405 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>1.5 Public Databases</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.1.0/reveal.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.1.0/theme/white.min.css">
+<link rel="stylesheet" href="../assets/css/course.css">
+<style>
+  .match-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.35em 1.2em; }
+  .match-grid button { width: 100%; text-align: left; margin: 0.08em 0; }
+  .match-grid button.done { border-color: var(--good); background: #e3f6ea; color: #1f7a45; cursor: default; }
+  .mono { font-family: var(--r-code-font); }
+  .reveal table.tbl { border-collapse: collapse; font-size: 0.62em; margin: 0.3em 0; width: 100%; }
+  .tbl td, .tbl th { border: 1px solid var(--line); padding: 0.25em 0.5em; text-align: left; vertical-align: top; }
+  .tbl th { background: var(--panel); }
+  .ruler { font-family: var(--r-code-font); font-size: 1.05em; letter-spacing: 0; white-space: nowrap; }
+  .ruler span { display: inline-block; width: 1.35em; text-align: center; border-radius: 4px; }
+  .ruler .sel { background: #e3dcff; }
+  .ruler span.idx { font-size: 0.55em; width: 2.4545em; color: var(--muted); }   /* same width as a base: 1.35em / 0.55 */
+  .hunt-row { display: grid; grid-template-columns: 10em 1fr 5.5em; gap: 0.5em; align-items: center; margin: 0.25em 0; }
+  .hunt-row input { font-size: 0.95em !important; }
+  .hunt-row .mark { font-weight: 700; }
+</style>
+</head>
+<body>
+<div class="reveal"><div class="slides">
+
+<!-- 1 · Title -->
+<section class="title-slide center">
+  <div class="course">UACB-604 · Computational Genomics · Lecture 1.5</div>
+  <h1>Public databases:<br>where the data lives</h1>
+  <div class="dna-strip" id="title-dna"></div>
+  <p class="muted small">NCBI · EBI · Ensembl · UCSC · UniProt/Expasy · KEGG, and the maths of identifiers and coordinates.</p>
+  <aside class="notes">45 min. Students need their laptops with a browser for the treasure hunt (slide 8).</aside>
+</section>
+
+<!-- 2 · ID matching game -->
+<section data-results="board">
+  <div class="kicker">Warm-up <span class="badge game">game</span></div>
+  <h2>One gene, seven names</h2>
+  <div class="widget">
+    <p class="small muted" style="margin-top:0">All seven identifiers below point at the same gene, <b>TP53</b>. Click an identifier, then the database it belongs to.</p>
+    <div class="match-grid" id="idm"></div>
+    <div class="feedback" id="idm-fb"></div>
+    <p class="tiny">Matched <b id="idm-ok">0</b>/7 · attempts <b id="idm-tries">0</b></p>
+  </div>
+  <aside class="notes">5 min. First-try matches score. Message: every database invents its own key; linking them is half of bioinformatics.</aside>
+</section>
+
+<!-- 3 · Database map -->
+<section>
+  <div class="kicker">Who's who <span class="badge bio">biology</span></div>
+  <h2>The main public databases</h2>
+  <table class="tbl">
+    <tr><th>Resource</th><th>Run by</th><th>Go there for</th><th>Example ID</th></tr>
+    <tr><td><b>GenBank</b> (with ENA, DDBJ)</td><td>NCBI (USA), EMBL-EBI (UK), DDBJ (Japan) share data daily: the INSDC</td><td>The archive: every submitted sequence</td><td class="mono">U00096</td></tr>
+    <tr><td><b>RefSeq, Gene, SRA, PubMed</b></td><td>NCBI</td><td>Curated reference sequences, gene pages, raw reads, papers</td><td class="mono">NM_000546</td></tr>
+    <tr><td><b>Ensembl</b></td><td>EMBL-EBI</td><td>Genome annotation and comparative genomics, many species</td><td class="mono">ENSG00000141510</td></tr>
+    <tr><td><b>UCSC Genome Browser</b></td><td>UC Santa Cruz</td><td>Visualising tracks along the genome; Table Browser downloads</td><td class="mono">chr17:7,668,421-7,687,490</td></tr>
+    <tr><td><b>UniProt</b> / <b>Expasy</b></td><td>EBI + SIB + PIR / SIB (Swiss Institute of Bioinformatics)</td><td>Proteins: curated function, sequence; Expasy tools (e.g. ProtParam)</td><td class="mono">P04637</td></tr>
+    <tr><td><b>KEGG</b></td><td>Kyoto University</td><td>Pathways and metabolism as networks</td><td class="mono">hsa04115</td></tr>
+  </table>
+  <div class="callout small fragment"><b>Primary vs curated:</b> GenBank stores what submitters sent, duplicates and all. RefSeq, Ensembl and Swiss-Prot are <b>curated</b>: one reviewed record per gene or protein. Use curated records as references.</div>
+  <aside class="notes">4 min. U00096 is the GenBank (submitted) record of the E. coli K-12 genome from Lecture 1.1; NC_000913 is its curated RefSeq copy.</aside>
+</section>
+
+<!-- 4 · Accession game -->
+<section data-results="board">
+  <div class="kicker">Read an accession <span class="badge game">game</span> <span class="badge math">maths</span></div>
+  <h2>What kind of record is this?</h2>
+  <div class="cols w60">
+    <div class="widget panel">
+      <p class="tiny" style="text-align:center;margin:0">Card <span id="ac-i">1</span> of <span id="ac-n"></span> · score <b id="ac-score">0</b></p>
+      <div class="mono" id="ac-card" style="font-size:1.9em;font-weight:700;text-align:center;margin:0.3em 0"></div>
+      <div id="ac-opts" style="text-align:center"></div>
+      <div class="feedback" id="ac-fb" style="text-align:center"></div>
+      <p style="text-align:center"><button id="ac-next" class="primary">Next →</button></p>
+    </div>
+    <div class="small">
+      <p>Accessions follow <b>patterns</b>, which a computer can match with <b>regular expressions</b>:</p>
+      <p class="mono" style="font-size:0.8em">N[CGTWZ]_\d+ &nbsp;RefSeq DNA<br>[NX]M_\d+ &nbsp;&nbsp;&nbsp;RefSeq mRNA<br>[NX]P_\d+ &nbsp;&nbsp;&nbsp;RefSeq protein<br>ENS[GTP]\d{11} Ensembl gene/transcript/protein<br>[OPQ]\d[A-Z0-9]{3}\d &nbsp;UniProt (one form)</p>
+      <p><b>.version</b> at the end (e.g. <span class="mono">NM_000546.6</span>) changes when the sequence changes. Cite the version.</p>
+    </div>
+  </div>
+  <aside class="notes">5 min. N = curated (known), X = predicted (model). Regular expressions are formal languages: maths students may know them from automata theory.</aside>
+</section>
+
+<!-- 5 · Assemblies -->
+<section>
+  <div class="kicker">Versions <span class="badge bio">biology</span> <span class="badge math">maths</span></div>
+  <h2>The same gene, three addresses</h2>
+  <div class="cols">
+    <div>
+      <p class="small">The human <b>reference genome</b> is updated. Coordinates are only meaningful with the assembly name.</p>
+      <table class="tbl">
+        <tr><th>Assembly</th><th>Year</th><th>TP53 (1-based, NCBI)</th></tr>
+        <tr><td>GRCh37 (hg19)</td><td>2009</td><td class="mono">chr17:7,571,739–7,590,808</td></tr>
+        <tr><td>GRCh38 (hg38)</td><td>2013</td><td class="mono">chr17:7,668,421–7,687,490</td></tr>
+        <tr><td>T2T-CHM13</td><td>2022</td><td class="mono">chr17:7,572,544–7,591,594</td></tr>
+      </table>
+      <p class="small">GRCh37 → GRCh38 shifted TP53 by <b>96,682 bp</b>. A variant at chr17:7,577,120 is inside TP53 on GRCh37 but nowhere near it on GRCh38.</p>
+    </div>
+    <div>
+      <div class="callout q small">“Lift-over” tools convert coordinates between assemblies. Maths view: a piecewise translation map, mostly \(x \mapsto x + c_i\) on blocks, undefined where sequence was added or removed.</div>
+      <p class="tiny">T2T-CHM13 is the first gap-free (“telomere-to-telomere”) human genome. Values retrieved from NCBI Gene, November 2026.</p>
+    </div>
+  </div>
+  <aside class="notes">4 min. UCSC names: hg19 = GRCh37, hg38 = GRCh38.</aside>
+</section>
+
+<!-- 6 · Coordinates -->
+<section>
+  <div class="kicker">The classic bug <span class="badge">interactive</span> <span class="badge math">maths</span></div>
+  <h2>0-based or 1-based?</h2>
+  <div class="cols w60">
+    <div class="widget">
+      <p style="margin-top:0">Drag to select bases (the purple region):</p>
+      <div class="ruler" id="ruler"></div>
+      start <input type="range" id="ru-a" min="0" max="19" value="4" style="width:45%"> end <input type="range" id="ru-b" min="1" max="20" value="9" style="width:45%">
+      <div class="stat-row">
+        <div class="stat"><b id="ru-1"></b><span>1-based, closed [s, e]<br>NCBI web, Ensembl, GFF, VCF, SAM</span></div>
+        <div class="stat"><b id="ru-0"></b><span>0-based, half-open [s, e)<br>UCSC BED, BAM internals, Python, NCBI API</span></div>
+      </div>
+      <p>length = <b id="ru-len"></b> &nbsp;·&nbsp; 1-based: \(e - s + 1\) &nbsp;·&nbsp; 0-based: \(e - s\)</p>
+    </div>
+    <div>
+      <div class="panel" id="bed-q"></div>
+      <p class="tiny fragment">Real trap: NCBI's gene <i>web page</i> says TP53 starts at 7,668,421; NCBI's own <i>API</i> returns 7,668,420. Same database, two conventions. You'll meet it in the notebook.</p>
+    </div>
+  </div>
+  <aside class="notes">5 min. Half-open intervals are what mathematicians and programmers like: lengths are e − s, and adjacent intervals [a,b) [b,c) share no base and leave no gap.</aside>
+</section>
+
+<!-- 7 · Databases disagree -->
+<section>
+  <div class="kicker">Relations, not functions <span class="badge math">maths</span></div>
+  <h2>Databases disagree, and mappings branch</h2>
+  <div class="cols">
+    <div class="small">
+      <p><b>Where is TP53?</b> (both GRCh38, 1-based)</p>
+      <p class="mono">NCBI&nbsp;&nbsp;&nbsp;: 7,668,421 – 7,687,490<br>Ensembl: 7,661,779 – 7,687,546</p>
+      <p>Each defines a gene as the span of <i>its own</i> transcripts. Ensembl lists <b>40</b> transcripts for TP53; one extends 6.6 kb further.</p>
+    </div>
+    <div>
+      <svg id="rel-chart" viewBox="0 0 520 300" width="100%"></svg>
+      <p class="small">KEGG maps <span class="mono">hsa:7157</span> to <b>three</b> UniProt entries (one reviewed, two unreviewed). An ID mapping is a <b>relation</b>; it is a <b>function</b> only if each key maps to one value. Check before you join tables, or rows multiply.</p>
+    </div>
+  </div>
+  <aside class="notes">4 min. Joining a 20,000-row table through a one-to-many mapping can silently produce 60,000 rows.</aside>
+</section>
+
+<!-- 8 · Treasure hunt -->
+<section data-results="board">
+  <div class="kicker">Treasure hunt <span class="badge game">game</span></div>
+  <h2>Find your gene in four databases</h2>
+  <div class="cols w60">
+    <div class="widget">
+      <p style="margin-top:0">Pick a gene (human): <span id="hunt-genes"></span></p>
+      <div class="hunt-row"><span>NCBI Gene ID</span><input type="text" data-f="ncbi" placeholder="number, e.g. 1234"><span class="mark"></span></div>
+      <div class="hunt-row"><span>Ensembl gene ID</span><input type="text" data-f="ens" placeholder="ENSG…"><span class="mark"></span></div>
+      <div class="hunt-row"><span>UniProt (Swiss-Prot)</span><input type="text" data-f="up" placeholder="e.g. P12345"><span class="mark"></span></div>
+      <div class="hunt-row"><span>Chromosome</span><input type="text" data-f="chr" placeholder="e.g. 5"><span class="mark"></span></div>
+      <button id="hunt-check" class="primary">Check my answers</button>
+      <div class="feedback" id="hunt-fb"></div>
+    </div>
+    <div class="small panel">
+      <h3>Where to look</h3>
+      <ul>
+        <li><b>ncbi.nlm.nih.gov/gene</b>: search “<i>symbol</i> human”</li>
+        <li><b>ensembl.org</b>: search the symbol, open the human gene</li>
+        <li><b>uniprot.org</b>: reviewed entry, organism Homo sapiens</li>
+        <li><b>genome.ucsc.edu</b>: type the symbol into the browser</li>
+      </ul>
+      <p class="tiny">In class, each answer is final once you press Check. Bonus if time: find one KEGG pathway with your gene.</p>
+    </div>
+  </div>
+  <aside class="notes">8 min. Students work in pairs on their laptops. Answers in the teacher notes.</aside>
+</section>
+
+<!-- 9 · KEGG & Expasy -->
+<section>
+  <div class="kicker">Beyond sequences <span class="badge bio">biology</span> <span class="badge math">maths</span></div>
+  <h2>Pathways are graphs; proteins have masses</h2>
+  <div class="cols">
+    <div class="panel small">
+      <h3>KEGG</h3>
+      <p>A pathway map (e.g. <span class="mono">hsa04115</span>, p53 signalling) is a <b>directed graph</b>: nodes = genes or compounds, edges = activation, inhibition, reaction.</p>
+      <p>TP53 appears in <b>52</b> human KEGG pathways. Graph questions (which genes are hubs? shortest path?) become biology questions.</p>
+    </div>
+    <div class="panel small">
+      <h3>Expasy / UniProt</h3>
+      <p>ProtParam computes a protein's mass from its sequence, the same idea as the peptide calculator in Lecture 1.2, using <b>average</b> residue masses.</p>
+      <p>p53 (UniProt <span class="mono">P04637</span>): 393 amino acids, <b>43,653 Da</b>. In the notebook you'll reproduce that number exactly from the sequence.</p>
+    </div>
+  </div>
+  <aside class="notes">3 min.</aside>
+</section>
+
+<!-- 10 · APIs -->
+<section>
+  <div class="kicker">From clicks to code</div>
+  <h2>A URL can be a function call</h2>
+  <div class="panel mono" style="font-size:0.58em;line-height:1.5">
+    GET https://rest.ensembl.org/lookup/symbol/homo_sapiens/<b>TP53</b><br>
+    → {"id": "ENSG00000141510", "seq_region_name": "17", "start": 7661779, "end": 7687546, "strand": -1, "assembly_name": "GRCh38", …}<br><br>
+    GET https://rest.kegg.jp/link/pathway/<b>hsa:7157</b><br>
+    → hsa:7157 &nbsp;path:hsa01522<br>&nbsp;&nbsp;&nbsp;hsa:7157 &nbsp;path:hsa01524 &nbsp;…<br><br>
+    GET https://rest.uniprot.org/uniprotkb/<b>P04637</b>?format=fasta
+  </div>
+  <ul class="small">
+    <li>Input (the gene) goes in the URL; output comes back as data (JSON, tables, FASTA).</li>
+    <li>A script that queries 500 genes is <b>reproducible</b>; 500 browser clicks are not.</li>
+    <li>Be polite: a few requests per second at most (NCBI asks for ≤ 3 per second without a key).</li>
+  </ul>
+  <aside class="notes">2 min. The notebook does exactly this for five genes.</aside>
+</section>
+
+<!-- 11 · Quiz -->
+<section>
+  <div class="kicker">Exit quiz <span class="badge game">game</span></div>
+  <h2>Four questions</h2>
+  <div class="cols">
+    <div class="panel" id="q1"></div>
+    <div class="panel" id="q2"></div>
+    <div class="panel" id="q3"></div>
+    <div class="panel" id="q4"></div>
+  </div>
+</section>
+
+<!-- 12 · Unit wrap-up -->
+<section>
+  <div class="kicker">End of Unit 1</div>
+  <h2>Unit 1 in one slide</h2>
+  <table class="tbl" style="font-size:0.58em">
+    <tr><th>Lecture</th><th>Biology</th><th>Maths</th></tr>
+    <tr><td>1.1</td><td>A genome is a string</td><td>Entropy, expected k-mer counts, geometric ORF lengths</td></tr>
+    <tr><td>1.2</td><td>Omics as data types</td><td>Count matrices, negative binomial, binomial intervals, compositional data</td></tr>
+    <tr><td>1.3</td><td>Genome organisation</td><td>Null models and z-scores, mod 3, log-normal lengths</td></tr>
+    <tr><td>1.4</td><td>Genome maps</td><td>Poisson process → Haldane map function</td></tr>
+    <tr><td>1.5</td><td>Public databases</td><td>Identifiers, relations vs functions, interval conventions</td></tr>
+  </table>
+  <div class="cols" style="margin-top:0.5em">
+    <div class="panel small"><b>Notebook (Colab, Python):</b> <a href="https://colab.research.google.com/github/mbsai/UACB604-Computational-Genomics/blob/main/unit01/notebooks/1.5_database_apis.ipynb" target="_blank">1.5_database_apis.ipynb</a><br>Query NCBI, Ensembl, UniProt and KEGG from code; build an ID-mapping table.</div>
+    <div class="panel small"><b>Reading:</b> Pevsner, ch. 2 · Buffalo, ch. 9<br><b>Next: Unit 2</b>, sequencing technologies and file formats.</div>
+  </div>
+</section>
+
+</div></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.1.0/reveal.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.1.0/plugin/math/math.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.1.0/plugin/notes/notes.min.js"></script>
+<script src="../assets/js/live.js"></script>
+<script src="../assets/js/course.js"></script>
+<script>
+CG.initDeck();
+var $ = function (id) { return document.getElementById(id); };
+$('title-dna').innerHTML = CG.colorSeq(CG.randomSeq(70));
+
+// ---------- ID matching ----------
+(function () {
+  var pairs = [['7157', 'NCBI Gene'], ['ENSG00000141510', 'Ensembl gene'], ['P04637', 'UniProt protein'], ['NM_000546', 'RefSeq mRNA'],
+               ['hsa:7157', 'KEGG gene'], ['191170', 'OMIM (disease catalogue)'], ['HGNC:11998', 'HGNC (official gene name)']];
+  var grid = $('idm'), selL = null, tries = 0, ok = 0, failed = {}, left = [];
+  var order = pairs.map(function (_, i) { return i; }).sort(function () { return Math.random() - 0.5; });
+  pairs.forEach(function (p, r) {
+    var bl = document.createElement('button'); bl.textContent = p[0]; bl.dataset.i = r; bl.className = 'mono';
+    var br = document.createElement('button'); br.textContent = pairs[order[r]][1]; br.dataset.i = order[r];
+    bl.onclick = function () { if (bl.classList.contains('done')) return; left.forEach(function (b) { b.classList.remove('chosen'); }); bl.classList.add('chosen'); selL = bl; };
+    br.onclick = function () {
+      if (!selL || br.classList.contains('done')) return;
+      tries++; $('idm-tries').textContent = tries;
+      if (selL.dataset.i === br.dataset.i) {
+        CG.report(grid, 'idm-' + selL.dataset.i, 'ID match: ' + selL.textContent, !failed[selL.dataset.i], br.textContent);
+        selL.classList.remove('chosen'); selL.classList.add('done'); br.classList.add('done'); ok++; $('idm-ok').textContent = ok;
+        $('idm-fb').className = 'feedback ok'; $('idm-fb').textContent = ok === pairs.length ? '🎉 All seven matched in ' + tries + ' attempts!' : '✓ Matched.';
+        selL = null;
+      } else {
+        failed[selL.dataset.i] = true; br.classList.add('wrong'); setTimeout(function () { br.classList.remove('wrong'); }, 600);
+        $('idm-fb').className = 'feedback no'; $('idm-fb').textContent = '✗ Try again.';
+      }
+    };
+    left.push(bl); grid.appendChild(bl); grid.appendChild(br);
+  });
+})();
+
+// ---------- Accession cards ----------
+(function () {
+  var types = ['RefSeq chromosome / genome', 'RefSeq mRNA', 'RefSeq protein', 'Ensembl transcript', 'UniProt protein', 'SRA sequencing run', 'Genome assembly', 'KEGG pathway'];
+  var cards = [['NC_000913.3', 0], ['NM_000546.6', 1], ['NP_000537.3', 2], ['ENST00000269305', 3], ['P68871', 4], ['SRR1039508', 5], ['GCF_000001405.40', 6], ['hsa04115', 7]];
+  var i = 0, score = 0, answered = false;
+  $('ac-n').textContent = cards.length;
+  function show() {
+    answered = false; $('ac-i').textContent = i + 1; $('ac-card').textContent = cards[i][0]; $('ac-fb').textContent = '';
+    var opts = [cards[i][1]];
+    while (opts.length < 4) { var t = Math.floor(Math.random() * types.length); if (opts.indexOf(t) < 0) opts.push(t); }
+    opts.sort(function () { return Math.random() - 0.5; });
+    var box = $('ac-opts'); box.innerHTML = '';
+    opts.forEach(function (t) {
+      var b = document.createElement('button'); b.textContent = types[t];
+      b.onclick = function () {
+        if (answered) return; answered = true;
+        var good = t === cards[i][1]; if (good) score++; $('ac-score').textContent = score;
+        b.className = good ? 'right' : 'wrong';
+        $('ac-fb').className = 'feedback ' + (good ? 'ok' : 'no'); $('ac-fb').textContent = (good ? '✓ ' : '✗ ') + types[cards[i][1]];
+        CG.report(box, 'acc-' + i, 'Accession: ' + cards[i][0], good, types[t]);
+      };
+      box.appendChild(b);
+    });
+  }
+  $('ac-next').onclick = function () { if (i < cards.length - 1) { i++; show(); } else { $('ac-fb').className = 'feedback ok'; $('ac-fb').textContent = 'Done! ' + score + '/' + cards.length; } };
+  show();
+})();
+
+// ---------- Coordinate ruler ----------
+(function () {
+  var seq = 'ATGGCTAGCTTACGGATCCA';
+  function draw() {
+    var a = +$('ru-a').value, b = +$('ru-b').value;
+    if (b <= a) { b = a + 1; $('ru-b').value = b; }
+    var h = '';
+    for (var k = 0; k < seq.length; k++) h += '<span class="' + (k >= a && k < b ? 'sel' : '') + '"><span class="nt-' + seq[k] + '">' + seq[k] + '</span></span>';
+    h += '<br>'; for (var k2 = 0; k2 < seq.length; k2++) h += '<span class="idx">' + (k2 + 1) + '</span>';
+    h += ' <span class="idx" style="width:auto">← 1-based</span><br>';
+    for (var k3 = 0; k3 < seq.length; k3++) h += '<span class="idx">' + k3 + '</span>';
+    h += ' <span class="idx" style="width:auto">← 0-based</span>';
+    $('ruler').innerHTML = h;
+    $('ru-1').textContent = '[' + (a + 1) + ', ' + b + ']';
+    $('ru-0').textContent = '[' + a + ', ' + b + ')';
+    $('ru-len').textContent = (b - a) + ' bp';
+  }
+  $('ru-a').addEventListener('input', draw); $('ru-b').addEventListener('input', draw); draw();
+})();
+CG.mcq($('bed-q'), { id: 'bed', q: 'A BED file says <span class="mono">chr17 7668420 7687490</span>. In 1-based coordinates that is…',
+  options: ['7,668,420 – 7,687,490', '7,668,421 – 7,687,490', '7,668,421 – 7,687,491'], answer: 1,
+  explain: 'Add 1 to the start only. The half-open end is already the last base in 1-based terms. (This is TP53 on GRCh38.)' });
+
+// ---------- Relation diagram ----------
+(function () {
+  var svg = $('rel-chart');
+  function node(x, y, t, c) { CG.svgEl('rect', { x: x - 78, y: y - 17, width: 156, height: 34, rx: 9, fill: c }, svg); CG.svgText(svg, x, y + 5, t, { 'text-anchor': 'middle', 'font-size': 14, 'font-family': 'JetBrains Mono, monospace', fill: '#1d2433' }); }
+  function edge(x1, y1, x2, y2) { CG.svgEl('line', { x1: x1, y1: y1, x2: x2, y2: y2, stroke: '#9aa3b2', 'stroke-width': 2 }, svg); }
+  edge(100, 150, 330, 60); edge(100, 150, 330, 150); edge(100, 150, 330, 240);
+  node(100, 150, 'hsa:7157', '#fff4d6');
+  node(400, 60, 'P04637 ✓', '#e3f6ea'); node(400, 150, 'Q53GA5', '#eef0f4'); node(400, 240, 'K7PPA8', '#eef0f4');
+  CG.svgText(svg, 100, 200, 'KEGG gene', { 'text-anchor': 'middle', 'font-size': 13, fill: '#5b6475' });
+  CG.svgText(svg, 400, 290, 'UniProt (✓ = reviewed)', { 'text-anchor': 'middle', 'font-size': 13, fill: '#5b6475' });
+})();
+
+// ---------- Treasure hunt ----------
+(function () {
+  var KEY = { TP53: { ncbi: '7157', ens: 'ENSG00000141510', up: 'P04637', chr: '17' },
+              HBB: { ncbi: '3043', ens: 'ENSG00000244734', up: 'P68871', chr: '11' },
+              INS: { ncbi: '3630', ens: 'ENSG00000254647', up: 'P01308', chr: '11' },
+              CFTR: { ncbi: '1080', ens: 'ENSG00000001626', up: 'P13569', chr: '7' },
+              BRCA1: { ncbi: '672', ens: 'ENSG00000012048', up: 'P38398', chr: '17' } };
+  var LABEL = { ncbi: 'NCBI Gene ID', ens: 'Ensembl gene ID', up: 'UniProt', chr: 'Chromosome' };
+  var gene = null, done = {}, box = $('hunt-genes');
+  Object.keys(KEY).forEach(function (g) {
+    var b = document.createElement('button'); b.textContent = g;
+    b.onclick = function () {
+      if (gene && Object.keys(done).length && CG.live()) return;   // gene is locked once answers were sent
+      gene = g; box.querySelectorAll('button').forEach(function (x) { x.classList.toggle('chosen', x === b); });
+      document.querySelectorAll('.hunt-row').forEach(function (r) { r.querySelector('.mark').textContent = ''; });
+      $('hunt-fb').textContent = '';
+    };
+    box.appendChild(b);
+  });
+  function norm(f, v) {
+    v = (v || '').trim().toUpperCase().replace(/\s+/g, '');
+    if (f === 'chr') v = v.replace(/^CHR(OMOSOME)?/, '');
+    if (f === 'ens') v = v.replace(/\.\d+$/, '');
+    if (f === 'ncbi') v = v.replace(/^GENEID:?/, '');
+    return v;
+  }
+  $('hunt-check').onclick = function () {
+    if (!gene) { $('hunt-fb').className = 'feedback no'; $('hunt-fb').textContent = 'Pick a gene first.'; return; }
+    var n = 0, right = 0;
+    document.querySelectorAll('.hunt-row').forEach(function (r) {
+      var inp = r.querySelector('input'), f = inp.dataset.f, mark = r.querySelector('.mark');
+      if (!inp.value.trim() || (done[f] && CG.live())) { if (done[f]) { n++; right += done[f] === 'ok' ? 1 : 0; } return; }
+      var ok = norm(f, inp.value) === KEY[gene][f]; n++; if (ok) right++;
+      mark.textContent = ok ? '✓' : '✗'; mark.style.color = ok ? 'var(--good)' : 'var(--bad)';
+      if (CG.live()) { done[f] = ok ? 'ok' : 'no'; inp.disabled = true; }
+      CG.report(r, 'hunt-' + f, 'Treasure hunt: ' + LABEL[f], ok, gene + ': ' + inp.value.trim());
+    });
+    $('hunt-fb').className = 'feedback ' + (right === 4 ? 'ok' : 'no');
+    $('hunt-fb').textContent = right + ' of ' + n + ' answered fields correct' + (right === 4 ? ' 🎉 Full set!' : '.');
+  };
+})();
+
+// ---------- Exit quiz ----------
+CG.mcq($('q1'), { id: 'quiz1', q: '1. BED interval [100, 200) contains how many bases?',
+  options: ['99', '100', '101'], answer: 1, explain: 'Half-open: end − start = 100.' });
+CG.mcq($('q2'), { id: 'quiz2', q: '2. Which is the curated, non-redundant collection?',
+  options: ['GenBank', 'RefSeq', 'SRA'], answer: 1, explain: 'RefSeq curates one reference record per molecule; GenBank archives every submission.' });
+CG.mcq($('q3'), { id: 'quiz3', q: '3. A paper reports “chr17:7,577,120”. What else do you need?',
+  options: ['the assembly (e.g. GRCh37)', 'the gene name', 'nothing'], answer: 0, explain: 'Coordinates differ between assemblies.' });
+CG.mcq($('q4'), { id: 'quiz4', q: '4. One KEGG gene maps to three UniProt IDs. Joining tables on this mapping…',
+  options: ['can duplicate rows', 'is always safe', 'deletes rows'], answer: 0, explain: 'One-to-many mappings multiply rows in a join.' });
+</script>
+</body>
+</html>

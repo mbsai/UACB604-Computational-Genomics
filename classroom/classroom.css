@@ -1,0 +1,23 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
+:root { --ink: #1d2433; --muted: #5b6475; --paper: #f4f6fa; --line: #dde2ea; --accent: #6b4fd8; --good: #2e9e5b; --bad: #d64545; }
+* { box-sizing: border-box; }
+body { margin: 0; min-height: 100vh; background: var(--paper); color: var(--ink); font: 17px/1.5 'Inter', system-ui, sans-serif; display: flex; align-items: flex-start; justify-content: center; padding: 6vh 16px; }
+.card { background: #fff; border: 1px solid var(--line); border-radius: 18px; padding: 28px 32px; width: 100%; max-width: 520px; box-shadow: 0 6px 30px rgba(29,36,51,.06); }
+.card.wide { max-width: 1100px; }
+.course { font-size: 12px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); }
+h1 { margin: .2em 0 .6em; font-size: 30px; letter-spacing: -.02em; }
+h2 { font-size: 18px; margin: 1.4em 0 .5em; }
+label { display: block; font-weight: 600; margin-bottom: 6px; }
+input { width: 100%; font: inherit; font-size: 20px; padding: 10px 14px; border: 2px solid var(--line); border-radius: 12px; }
+input:focus { outline: none; border-color: var(--accent); }
+button, .btn { font: inherit; font-weight: 600; cursor: pointer; border: 2px solid var(--accent); background: var(--accent); color: #fff; border-radius: 12px; padding: 10px 20px; margin-top: 12px; text-decoration: none; display: inline-block; }
+button.ghost, .btn.ghost { background: #fff; color: var(--accent); }
+.err { color: var(--bad); font-weight: 600; min-height: 1.5em; }
+.muted { color: var(--muted); } .small { font-size: 14px; } .big { font-size: 22px; }
+.join-url { font-size: clamp(28px, 5vw, 56px); font-weight: 800; color: var(--accent); word-break: break-all; margin: .1em 0; }
+.grid { display: grid; grid-template-columns: 1.3fr 1fr; gap: 24px; }
+@media (max-width: 800px) { .grid { grid-template-columns: 1fr; } }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { background: var(--paper); border: 1px solid var(--line); border-radius: 99px; padding: 3px 12px; font-size: 15px; }
+.lect { display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--line); border-radius: 12px; padding: 10px 14px; margin-bottom: 8px; }
+.lect .btn { margin: 0; padding: 6px 14px; }

@@ -1,0 +1,504 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>1.2 Omics as Data Types</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.1.0/reveal.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.1.0/theme/white.min.css">
+<link rel="stylesheet" href="../assets/css/course.css">
+<style>
+  .match-grid { display: grid; grid-template-columns: 1fr 2fr; gap: 0.5em 1.2em; }
+  .match-grid button { width: 100%; text-align: left; margin: 0.12em 0; }
+  .match-grid button.done { border-color: var(--good); background: #e3f6ea; color: #1f7a45; cursor: default; }
+  .reveal table.tbl { border-collapse: collapse; font-size: 0.68em; margin: 0.4em 0; }
+  .tbl td, .tbl th { border: 1px solid var(--line); padding: 0.2em 0.5em; text-align: right; }
+  .tbl th { background: var(--panel); }
+  .tbl td:first-child, .tbl th:first-child { text-align: left; }
+  .pep-opts button { font-family: var(--r-code-font); }
+</style>
+</head>
+<body>
+<div class="reveal"><div class="slides">
+
+<!-- 1 · Title -->
+<section class="title-slide center">
+  <div class="course">UACB-604 · Computational Genomics · Lecture 1.2</div>
+  <h1>The omics family,<br>as data types</h1>
+  <div class="dna-strip" id="title-dna"></div>
+  <p class="muted small">Every “-omics” is a measurement. Every measurement is a mathematical object.</p>
+  <aside class="notes">45 min. Recap Lecture 1 in one sentence: a genome is a string. Today: what the other omics look like as data, and what maths each one needs.</aside>
+</section>
+
+<!-- 2 · Central dogma as a pipeline -->
+<section>
+  <div class="kicker">The big picture <span class="badge bio">biology</span></div>
+  <h2>The central dogma as a data pipeline</h2>
+  <svg viewBox="0 0 1180 330" width="100%">
+    <defs><marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#5b6475"/></marker></defs>
+    <g font-size="22" font-weight="700" text-anchor="middle">
+      <rect x="20"  y="110" width="200" height="90" rx="14" fill="#e3f1ff"/><text x="120" y="152">DNA</text><text x="120" y="182" font-size="16" font-weight="400" fill="#5b6475">genome</text>
+      <rect x="330" y="110" width="200" height="90" rx="14" fill="#e3f6ea"/><text x="430" y="152">RNA</text><text x="430" y="182" font-size="16" font-weight="400" fill="#5b6475">transcriptome</text>
+      <rect x="640" y="110" width="200" height="90" rx="14" fill="#fff4d6"/><text x="740" y="152">Protein</text><text x="740" y="182" font-size="16" font-weight="400" fill="#5b6475">proteome</text>
+      <rect x="950" y="110" width="210" height="90" rx="14" fill="#fde8e8"/><text x="1055" y="152">Phenotype</text><text x="1055" y="182" font-size="16" font-weight="400" fill="#5b6475">trait, disease</text>
+    </g>
+    <g stroke="#5b6475" stroke-width="3" marker-end="url(#arr)">
+      <line x1="225" y1="155" x2="322" y2="155"/><line x1="535" y1="155" x2="632" y2="155"/><line x1="845" y1="155" x2="942" y2="155"/>
+    </g>
+    <g font-size="16" fill="#5b6475" text-anchor="middle">
+      <text x="273" y="140">transcription</text><text x="585" y="140">translation</text>
+    </g>
+    <g font-size="17" text-anchor="middle" font-weight="600">
+      <rect x="20" y="20" width="200" height="56" rx="10" fill="#fff" stroke="#6b4fd8" stroke-width="2"/><text x="120" y="54" fill="#6b4fd8">Epigenome</text>
+      <line x1="120" y1="78" x2="120" y2="106" stroke="#6b4fd8" stroke-width="2" marker-end="url(#arr)"/>
+      <text x="300" y="54" font-size="15" font-weight="400" fill="#5b6475" text-anchor="start">controls which genes are read</text>
+      <rect x="20" y="240" width="1140" height="70" rx="12" fill="#f4f6fa" stroke="#dde2ea"/>
+      <text x="590" y="270" fill="#1d2433">Metagenome</text>
+      <text x="590" y="295" font-size="15" font-weight="400" fill="#5b6475">all of the above, for every organism in a sample at once (gut, soil, ocean)</text>
+    </g>
+  </svg>
+  <p class="small">“-ome” = the complete set. Measuring the complete set is what makes it a <b>high-dimensional data</b> problem: thousands of variables, often only tens of samples.</p>
+  <aside class="notes">3 min. Ask: if a study has 20 patients and measures 20,000 genes, what problem does a statistician see? (p ≫ n: more variables than samples.)</aside>
+</section>
+
+<!-- 3 · Matching game -->
+<section data-results="board">
+  <div class="kicker">Team challenge <span class="badge game">game</span></div>
+  <h2>Match the omics to its data</h2>
+  <div class="widget">
+    <p class="small muted" style="margin-top:0">Click an omics, then the data it produces. Vote as a class first.</p>
+    <div class="match-grid" id="match"></div>
+    <div class="feedback" id="match-fb"></div>
+    <p class="tiny">Attempts: <b id="match-tries">0</b> · matched <b id="match-ok">0</b>/5</p>
+  </div>
+  <aside class="notes">6 min. Let teams of 4–5 discuss for one minute, then take answers from each team. The rest of the lecture walks through each match.</aside>
+</section>
+
+<!-- 4 · Genomics -->
+<section>
+  <div class="kicker">Genomics <span class="badge math">maths</span></div>
+  <h2>From strings to a genotype matrix</h2>
+  <div class="cols">
+    <div>
+      <p class="small">We rarely compare whole strings. We compare each person to the <b>reference genome</b> and keep only the differences (variants).</p>
+      <table class="tbl">
+        <tr><th>position</th><th>ref</th><th>alt</th><th>Asha</th><th>Ben</th><th>Chen</th><th>Dev</th></tr>
+        <tr><td>chr1:1,014,143</td><td>C</td><td>T</td><td>0</td><td>1</td><td>0</td><td>2</td></tr>
+        <tr><td>chr1:1,020,172</td><td>G</td><td>A</td><td>1</td><td>1</td><td>2</td><td>0</td></tr>
+        <tr><td>chr2:3,901,551</td><td>A</td><td>G</td><td>0</td><td>0</td><td>0</td><td>1</td></tr>
+      </table>
+      <p class="tiny">Toy data. 0 / 1 / 2 = number of copies of the alternative allele (humans carry two copies of each chromosome).</p>
+      <p class="small fragment">The result is a matrix \(X \in \{0,1,2\}^{n \times p}\). The 1000 Genomes Project: \(n \approx 2{,}500\) people, \(p \approx 88\) million variants.</p>
+    </div>
+    <div>
+      <div class="panel fragment" id="g-q"></div>
+      <div class="callout small fragment">Hardy–Weinberg: with allele frequency \(q\), genotypes 0, 1, 2 should appear with probabilities \((1-q)^2,\ 2q(1-q),\ q^2\). Deviations flag genotyping errors or selection.</div>
+    </div>
+  </div>
+  <aside class="notes">4 min. Allele frequency of SNP 1: (0+1+0+2)/(2×4) = 3/8. Preview: PCA on X separates populations (Unit 10/multi-omics).</aside>
+</section>
+
+<!-- 5 · Transcriptomics: count matrix + depth -->
+<section>
+  <div class="kicker">Transcriptomics <span class="badge">interactive</span> <span class="badge math">maths</span></div>
+  <h2>A count matrix, and why raw counts lie</h2>
+  <div class="cols">
+    <div>
+      <p class="small">RNA-seq counts how many reads land on each gene: a matrix of non-negative integers, <b>genes × samples</b>.</p>
+      <p class="small">Samples A and B come from <b>identical</b> cells. Only the sequencing depth differs. Drag the slider.</p>
+      <div class="widget">
+        Depth of sample B: <b id="dep-x">1.0</b>× sample A
+        <input type="range" id="dep" min="0.5" max="4" step="0.1" value="1">
+        <table class="tbl" id="dep-tbl" style="margin-top:0.4em;width:100%"></table>
+      </div>
+    </div>
+    <div>
+      <div class="callout small">Counts per million (CPM): divide by the library size \(N_j\):
+      $$\text{CPM}_{ij} = \frac{K_{ij}}{N_j}\times 10^6$$</div>
+      <div class="callout q small fragment">But if one gene in B is hugely up-regulated, it “steals” reads and every other gene looks down. Better normalisations (DESeq2's median of ratios, TMM) fix this. Unit 10.</div>
+      <p class="small fragment">Longer genes also collect more reads, so comparing <b>genes</b> within a sample needs length normalisation (TPM).</p>
+    </div>
+  </div>
+  <aside class="notes">4 min. Ask before moving the slider: would a naive t-test call gene X differentially expressed? Raw counts scale with depth; CPM is constant.</aside>
+</section>
+
+<!-- 6 · Mean-variance -->
+<section>
+  <div class="kicker">Transcriptomics <span class="badge">interactive</span> <span class="badge math">maths</span></div>
+  <h2>Counts are noisier than Poisson</h2>
+  <div class="cols w60">
+    <div><svg id="mv-chart" viewBox="0 0 640 400" width="100%"></svg></div>
+    <div class="widget">
+      <p>If reads were sampled independently, counts would be Poisson: \(\operatorname{Var} = \mu\).</p>
+      <p>Biological replicates vary more. The <b>negative binomial</b> adds a dispersion \(\phi\):
+      $$\operatorname{Var} = \mu + \phi\,\mu^{2}$$</p>
+      dispersion \(\phi\) = <b id="phi-v">0.10</b>
+      <input type="range" id="phi" min="0" max="0.5" step="0.01" value="0.1">
+      <button id="mv-run" class="primary">Simulate 400 genes × 5 replicates</button>
+      <p class="tiny">Dots: sample mean vs variance of each simulated gene (log–log). Grey line: Poisson. Red line: negative binomial.</p>
+    </div>
+  </div>
+  <aside class="notes">4 min. Set φ = 0: dots sit on the Poisson line. Raise φ: high-count genes peel away. Real RNA-seq data look like φ ≈ 0.05–0.2 — students will see this in the notebook.</aside>
+</section>
+
+<!-- 7 · Proteomics -->
+<section data-results="board">
+  <div class="kicker">Proteomics <span class="badge game">game</span> <span class="badge math">maths</span></div>
+  <h2>Which peptide made this peak?</h2>
+  <div class="cols">
+    <div>
+      <p class="small">A mass spectrometer measures <b>mass-to-charge ratio</b> \(m/z\), not sequence. For a peptide of mass \(M\) carrying \(z\) protons:
+      $$m/z = \frac{M + z \times 1.00728}{z},\qquad M = 18.011 + \sum_{\text{residues}} m_r$$</p>
+      <div class="widget panel">
+        Peptide calculator: <input type="text" id="pep-in" value="PEPTIDE" style="width:12em;display:inline-block">
+        <div class="stat-row">
+          <div class="stat"><b id="pep-m">–</b><span>mass M (Da)</span></div>
+          <div class="stat"><b id="pep-z1">–</b><span>m/z, z = 1</span></div>
+          <div class="stat"><b id="pep-z2">–</b><span>m/z, z = 2</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="widget panel">
+      <p style="margin-top:0">The instrument sees a peak at<br><span class="big-num" id="pep-peak" style="color:var(--accent)"></span> <b>m/z</b> with charge <b>z = <span id="pep-zz"></span></b></p>
+      <div class="pep-opts" id="pep-opts"></div>
+      <div class="feedback" id="pep-fb"></div>
+      <button id="pep-new">Next peak →</button>
+    </div>
+  </div>
+  <p class="small fragment">Try <code>LIVER</code> and <code>IIVER</code>. Leucine and isoleucine have the same mass, so mass alone can never tell them apart: a <b>non-identifiable</b> parameter.</p>
+  <aside class="notes">7 min. Teams use the calculator to test candidates. Real proteomics does this against every peptide in a protein database, millions of comparisons per run — a search and scoring problem (Unit 9 has the same flavour with BLAST).</aside>
+</section>
+
+<!-- 8 · Epigenomics -->
+<section>
+  <div class="kicker">Epigenomics <span class="badge">interactive</span> <span class="badge math">maths</span></div>
+  <h2>Methylation is a proportion, with error bars</h2>
+  <div class="cols">
+    <div>
+      <p class="small">Bisulfite sequencing turns unmethylated C into T. At each CpG site we count reads: \(k\) still read C (methylated) out of \(n\).</p>
+      <p class="small">Methylation level \(\hat\beta = k/n\). That is a <b>binomial proportion</b>, and its uncertainty depends on coverage \(n\).</p>
+      <p class="small fragment">The human genome has about 28 million CpG sites, so the data are a long vector of proportions along the genome: a <b>signal track</b>. ChIP-seq (where a protein binds) gives a similar track of read coverage.</p>
+    </div>
+    <div class="widget panel">
+      coverage n = <b id="me-n">20</b> reads
+      <input type="range" id="me-nr" min="2" max="200" value="20">
+      methylated reads k = <b id="me-k">14</b>
+      <input type="range" id="me-kr" min="0" max="20" value="14">
+      <svg id="me-chart" viewBox="0 0 440 110" width="100%" style="margin-top:0.4em"></svg>
+      <p style="font-size:1.2em">\(\hat\beta\) = <b id="me-b"></b>, 95% Wilson interval <b id="me-ci"></b></p>
+    </div>
+  </div>
+  <aside class="notes">5 min. Set n = 4, k = 3: β̂ = 0.75 but the interval is huge. Ask: how much coverage do we need for ±0.1? Roughly n ≈ 100. This is a design question — Unit 5 on coverage.</aside>
+</section>
+
+<!-- 9 · Metagenomics -->
+<section>
+  <div class="kicker">Metagenomics <span class="badge">interactive</span> <span class="badge math">maths</span></div>
+  <h2>A mixture, measured as proportions</h2>
+  <div class="cols">
+    <div>
+      <p class="small">A gut sample holds DNA from hundreds of species. Sequencing gives <b>relative</b> abundances: each sample sums to 1. That is <b>compositional data</b>.</p>
+      <div class="widget">
+        Grow only <b style="color:#d64545">species A</b> by <b id="mg-x">1</b>×
+        <input type="range" id="mg" min="1" max="8" step="0.5" value="1">
+      </div>
+      <div class="callout q small fragment">Species B, C and D did not change at all, yet their proportions fell. Correlations between proportions are therefore misleading. Fix: log-ratio methods (Aitchison). Unit 12.</div>
+    </div>
+    <div><svg id="mg-chart" viewBox="0 0 460 330" width="100%"></svg></div>
+  </div>
+  <aside class="notes">5 min. Ask: if a paper says “species B decreased in patients”, what else could explain it? (Something else increased.)</aside>
+</section>
+
+<!-- 10 · Applications -->
+<section>
+  <div class="kicker">Why it matters <span class="badge bio">biology</span></div>
+  <h2>Omics in human health</h2>
+  <div class="cols">
+    <div class="panel small">
+      <h3>Cancer</h3>
+      <ul>
+        <li><b>Genomics:</b> compare tumour vs normal DNA of the same patient to find somatic mutations.</li>
+        <li><b>Transcriptomics:</b> PAM50 uses the expression of 50 genes to sort breast cancers into intrinsic subtypes that respond differently to treatment.</li>
+        <li><b>Epigenomics:</b> tumour-specific methylation in blood DNA is the basis of liquid biopsy tests.</li>
+      </ul>
+    </div>
+    <div class="panel small">
+      <h3>Type 2 diabetes</h3>
+      <ul>
+        <li><b>Genomics:</b> genome-wide association studies have found hundreds of risk loci, each with a small effect.</li>
+        <li><b>Metagenomics:</b> gut microbiomes differ in T2D, but much of the early signal came from the drug <b>metformin</b>, not the disease (Forslund et al., <i>Nature</i> 2015).</li>
+      </ul>
+      <div class="callout q">Lesson for statisticians: always ask about <b>confounders</b>.</div>
+    </div>
+  </div>
+  <aside class="notes">2 min. The notebook today uses a real colorectal cancer RNA-seq dataset (metastasised tumour vs control) from the Akalin textbook.</aside>
+</section>
+
+<!-- 11 · Quiz -->
+<section>
+  <div class="kicker">Exit quiz <span class="badge game">game</span></div>
+  <h2>Four questions</h2>
+  <div class="cols">
+    <div class="panel" id="q1"></div>
+    <div class="panel" id="q2"></div>
+    <div class="panel" id="q3"></div>
+    <div class="panel" id="q4"></div>
+  </div>
+</section>
+
+<!-- 12 · Wrap-up -->
+<section>
+  <div class="kicker">Wrap-up</div>
+  <h2>Each omics, as a mathematical object</h2>
+  <table class="tbl" style="font-size:0.6em;width:100%">
+    <tr><th>Omics</th><th>Data object</th><th>Key maths</th><th>Unit</th></tr>
+    <tr><td>Genomics</td><td>string; genotype matrix in {0,1,2}</td><td>string algorithms, population genetics, PCA</td><td>5–9, 11</td></tr>
+    <tr><td>Transcriptomics</td><td>count matrix (genes × samples)</td><td>normalisation, negative binomial models, p ≫ n</td><td>10</td></tr>
+    <tr><td>Proteomics</td><td>mass spectra (m/z peaks)</td><td>search and scoring, identifiability</td><td>—</td></tr>
+    <tr><td>Epigenomics</td><td>signal tracks; proportions per CpG</td><td>binomial inference, peak calling</td><td>10</td></tr>
+    <tr><td>Metagenomics</td><td>mixture; abundance table</td><td>compositional data, diversity indices</td><td>12</td></tr>
+  </table>
+  <div class="cols" style="margin-top:0.6em">
+    <div class="panel small"><b>Notebook (Colab, R):</b> <a href="https://colab.research.google.com/github/mbsai/UACB604-Computational-Genomics/blob/main/unit01/notebooks/1.2_count_matrix.ipynb" target="_blank">1.2_count_matrix.ipynb</a><br>Explore a real cancer RNA-seq count matrix: library sizes, CPM, mean–variance, PCA.</div>
+    <div class="panel small"><b>Reading:</b> Brown, <i>Genomes 5</i>, ch. 1, 12, 13 · Akalin, ch. 8 (RNA-seq)<br><b>Next: Lecture 1.3</b>, how genetic information is organised in prokaryotes and eukaryotes.</div>
+  </div>
+</section>
+
+</div></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.1.0/reveal.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.1.0/plugin/math/math.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.1.0/plugin/notes/notes.min.js"></script>
+<script src="../assets/js/live.js"></script>
+<script src="../assets/js/course.js"></script>
+<script>
+CG.initDeck();
+var $ = function (id) { return document.getElementById(id); };
+$('title-dna').innerHTML = CG.colorSeq(CG.randomSeq(70));
+
+// ---------- Matching game ----------
+(function () {
+  var pairs = [
+    ['Genomics', 'A 3-billion-letter string, plus a table of variants per person'],
+    ['Transcriptomics', 'A matrix of read counts: 20,000 genes × samples'],
+    ['Proteomics', 'Spectra: lists of mass-to-charge peaks and intensities'],
+    ['Epigenomics', 'A value at every CpG site or genome position: a signal track'],
+    ['Metagenomics', 'Reads from hundreds of species mixed together; relative abundances']
+  ];
+  var grid = $('match'), left = [], right = [], selL = null, tries = 0, ok = 0, failed = {};
+  var order = pairs.map(function (_, i) { return i; }).sort(function () { return Math.random() - 0.5; });
+  for (var r = 0; r < pairs.length; r++) {
+    (function (r) {
+      var bl = document.createElement('button'); bl.textContent = pairs[r][0]; bl.dataset.i = r;
+      var br = document.createElement('button'); br.textContent = pairs[order[r]][1]; br.dataset.i = order[r];
+      bl.onclick = function () {
+        if (bl.classList.contains('done')) return;
+        left.forEach(function (b) { b.classList.remove('chosen'); });
+        bl.classList.add('chosen'); selL = bl;
+      };
+      br.onclick = function () {
+        if (!selL || br.classList.contains('done')) return;
+        tries++; $('match-tries').textContent = tries;
+        if (selL.dataset.i === br.dataset.i) {
+          CG.report(grid, 'match-' + selL.dataset.i, 'Match: ' + selL.textContent, !failed[selL.dataset.i], 'first try: ' + !failed[selL.dataset.i]);
+          selL.classList.remove('chosen'); selL.classList.add('done'); br.classList.add('done');
+          ok++; $('match-ok').textContent = ok;
+          $('match-fb').className = 'feedback ok';
+          $('match-fb').textContent = ok === pairs.length ? '🎉 All matched in ' + tries + ' attempts!' : '✓ ' + selL.textContent + ' matched.';
+          selL = null;
+        } else {
+          failed[selL.dataset.i] = true;
+          br.classList.add('wrong'); setTimeout(function () { br.classList.remove('wrong'); }, 600);
+          $('match-fb').className = 'feedback no'; $('match-fb').textContent = '✗ Try again.';
+        }
+      };
+      left.push(bl); right.push(br);
+      grid.appendChild(bl); grid.appendChild(br);
+    })(r);
+  }
+})();
+
+// ---------- Genotype question ----------
+CG.mcq($('g-q'), { id: 'allele-freq', q: 'Allele frequency q of the alternative allele T at the first variant?',
+  options: ['1/4', '3/8', '1/2', '3/4'], answer: 1,
+  explain: '(0 + 1 + 0 + 2) alt copies out of 2 × 4 = 8 copies → 3/8.' });
+
+// ---------- Depth / CPM table ----------
+(function () {
+  var genes = [['GAPDH', 5200], ['ACTB', 4100], ['TP53', 320], ['MYC', 150], ['gene X', 60]];
+  var totA = 2e6;
+  function draw() {
+    var x = +$('dep').value; $('dep-x').textContent = x.toFixed(1);
+    var h = '<tr><th>gene</th><th>raw A</th><th>raw B</th><th>CPM A</th><th>CPM B</th></tr>';
+    genes.forEach(function (g) {
+      var a = g[1], b = Math.round(g[1] * x);
+      h += '<tr><td>' + g[0] + '</td><td>' + a.toLocaleString() + '</td><td><b>' + b.toLocaleString() + '</b></td><td>' +
+        (a / totA * 1e6).toFixed(0) + '</td><td>' + (b / (totA * x) * 1e6).toFixed(0) + '</td></tr>';
+    });
+    h += '<tr><th>library size</th><th>' + CG.fmtNum(totA) + '</th><th>' + CG.fmtNum(totA * x) + '</th><th>10⁶</th><th>10⁶</th></tr>';
+    $('dep-tbl').innerHTML = h;
+  }
+  $('dep').addEventListener('input', draw); draw();
+})();
+
+// ---------- Mean-variance simulation ----------
+(function () {
+  var svg = $('mv-chart');
+  function poisson(l) { // Knuth for small, normal approx for large
+    if (l < 30) { var L = Math.exp(-l), k = 0, p = 1; do { k++; p *= Math.random(); } while (p > L); return k - 1; }
+    return Math.max(0, Math.round(l + Math.sqrt(l) * gauss()));
+  }
+  function gauss() { var u = 1 - Math.random(), v = Math.random(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v); }
+  function gamma(shape) { // Marsaglia-Tsang, scale 1
+    if (shape < 1) return gamma(shape + 1) * Math.pow(Math.random(), 1 / shape);
+    var d = shape - 1 / 3, c = 1 / Math.sqrt(9 * d);
+    while (true) { var x = gauss(), v = Math.pow(1 + c * x, 3); if (v <= 0) continue;
+      var u = Math.random(); if (Math.log(u) < 0.5 * x * x + d - d * v + d * Math.log(v)) return d * v; }
+  }
+  function nb(mu, phi) { if (phi <= 0) return poisson(mu); var lam = gamma(1 / phi) * mu * phi; return poisson(lam); }
+  var x0 = 60, x1 = 620, y0 = 360, y1 = 15, lo = 0, hiX = 4, hiY = 8;
+  function X(v) { return x0 + (v - lo) / (hiX - lo) * (x1 - x0); }
+  function Y(v) { return y0 - (v - lo) / (hiY - lo) * (y0 - y1); }
+  function axes() {
+    while (svg.firstChild) svg.removeChild(svg.firstChild);
+    CG.svgEl('line', { x1: x0, x2: x1, y1: y0, y2: y0, stroke: '#5b6475' }, svg);
+    CG.svgEl('line', { x1: x0, x2: x0, y1: y0, y2: y1, stroke: '#5b6475' }, svg);
+    for (var e = 0; e <= 4; e++) CG.svgText(svg, X(e), y0 + 18, '10^' + e, { 'text-anchor': 'middle', 'font-size': 12, fill: '#5b6475' });
+    for (var e2 = 0; e2 <= 8; e2 += 2) CG.svgText(svg, x0 - 6, Y(e2) + 4, '10^' + e2, { 'text-anchor': 'end', 'font-size': 12, fill: '#5b6475' });
+    CG.svgText(svg, (x0 + x1) / 2, y0 + 36, 'mean count', { 'text-anchor': 'middle', 'font-size': 14 });
+    CG.svgText(svg, 16, (y0 + y1) / 2, 'variance', { 'text-anchor': 'middle', 'font-size': 14, transform: 'rotate(-90 16 ' + (y0 + y1) / 2 + ')' });
+  }
+  function line(f, color) {
+    var d = ''; for (var i = 0; i <= 40; i++) { var lm = i / 10, v = Math.log10(f(Math.pow(10, lm))); d += (i ? 'L' : 'M') + X(lm) + ' ' + Y(Math.min(hiY, v)); }
+    CG.svgEl('path', { d: d, fill: 'none', stroke: color, 'stroke-width': 2.5 }, svg);
+  }
+  function run() {
+    var phi = +$('phi').value; axes();
+    for (var g = 0; g < 400; g++) {
+      var mu = Math.pow(10, Math.random() * 3.8 + 0.1), xs = [];
+      for (var r = 0; r < 5; r++) xs.push(nb(mu, phi));
+      var m = xs.reduce(function (a, b) { return a + b; }, 0) / 5;
+      var v = xs.reduce(function (a, b) { return a + (b - m) * (b - m); }, 0) / 4;
+      if (m > 0 && v > 0) CG.svgEl('circle', { cx: X(Math.log10(m)), cy: Y(Math.min(hiY, Math.log10(v))), r: 3, fill: '#6b4fd8', 'fill-opacity': 0.45 }, svg);
+    }
+    line(function (m) { return m; }, '#9aa3b2');
+    if (phi > 0) line(function (m) { return m + phi * m * m; }, '#d64545');
+  }
+  $('phi').addEventListener('input', function () { $('phi-v').textContent = (+$('phi').value).toFixed(2); });
+  $('phi').addEventListener('change', run);
+  $('mv-run').onclick = run;
+  run();
+})();
+
+// ---------- Peptide calculator + game ----------
+(function () {
+  var RES = { G: 57.02146, A: 71.03711, S: 87.03203, P: 97.05276, V: 99.06841, T: 101.04768, C: 103.00919, L: 113.08406,
+    I: 113.08406, N: 114.04293, D: 115.02694, Q: 128.05858, K: 128.09496, E: 129.04259, M: 131.04049, H: 137.05891,
+    F: 147.06841, R: 156.10111, Y: 163.06333, W: 186.07931 };
+  var H2O = 18.01056, PROTON = 1.00728;
+  function mass(p) { var m = H2O; for (var i = 0; i < p.length; i++) { if (!RES[p[i]]) return NaN; m += RES[p[i]]; } return m; }
+  function mz(M, z) { return (M + z * PROTON) / z; }
+  function calc() {
+    var p = $('pep-in').value.toUpperCase().replace(/[^A-Z]/g, ''), M = p ? mass(p) : NaN;
+    $('pep-m').textContent = isNaN(M) ? '–' : M.toFixed(3);
+    $('pep-z1').textContent = isNaN(M) ? '–' : mz(M, 1).toFixed(3);
+    $('pep-z2').textContent = isNaN(M) ? '–' : mz(M, 2).toFixed(3);
+  }
+  $('pep-in').addEventListener('input', calc); calc();
+  var pool = ['MATHS', 'PEPTIDE', 'LIVER', 'CELLS', 'DATA', 'GENE', 'HEART', 'WATER', 'SEQ', 'MAPS', 'STRAND', 'KINASE'];
+  var roundNo = 0, MAX_LIVE = 5;
+  function round() {
+    if (CG.live() && roundNo >= MAX_LIVE) {
+      $('pep-fb').className = 'feedback ok'; $('pep-fb').textContent = 'All ' + MAX_LIVE + ' rounds done. Wait for the results!';
+      $('pep-new').disabled = true; return;
+    }
+    roundNo++;
+    var thisRound = roundNo, answered = false;
+    var cands = pool.slice().sort(function () { return Math.random() - 0.5; }).slice(0, 4);
+    var ans = Math.floor(Math.random() * 4), z = Math.random() < 0.5 ? 1 : 2;
+    $('pep-peak').textContent = mz(mass(cands[ans]), z).toFixed(3); $('pep-zz').textContent = z;
+    $('pep-fb').textContent = ''; var box = $('pep-opts'); box.innerHTML = '';
+    cands.forEach(function (c, i) {
+      var b = document.createElement('button'); b.textContent = c;
+      b.onclick = function () {
+        if (CG.live() && answered) return;
+        answered = true;
+        CG.report(box, 'pep-' + thisRound, 'Peptide round ' + thisRound, i === ans, c);
+        box.querySelectorAll('button').forEach(function (x, j) { x.classList.remove('right', 'wrong'); if (j === ans) x.classList.add('right'); });
+        if (i !== ans) b.classList.add('wrong');
+        $('pep-fb').className = 'feedback ' + (i === ans ? 'ok' : 'no');
+        $('pep-fb').textContent = (i === ans ? '✓ ' : '✗ ') + cands[ans] + ': M = ' + mass(cands[ans]).toFixed(3) + ' Da';
+      };
+      box.appendChild(b);
+    });
+  }
+  $('pep-new').onclick = round; round();
+})();
+
+// ---------- Methylation binomial ----------
+(function () {
+  var svg = $('me-chart');
+  function wilson(k, n) {
+    var z = 1.96, p = k / n, den = 1 + z * z / n, c = (p + z * z / (2 * n)) / den,
+        h = z * Math.sqrt(p * (1 - p) / n + z * z / (4 * n * n)) / den;
+    return [Math.max(0, c - h), Math.min(1, c + h)];
+  }
+  function draw() {
+    var n = +$('me-nr').value, kr = $('me-kr');
+    kr.max = n; if (+kr.value > n) kr.value = n;
+    var k = +kr.value, ci = wilson(k, n), b = k / n;
+    $('me-n').textContent = n; $('me-k').textContent = k;
+    $('me-b').textContent = b.toFixed(2); $('me-ci').textContent = '[' + ci[0].toFixed(2) + ', ' + ci[1].toFixed(2) + ']';
+    while (svg.firstChild) svg.removeChild(svg.firstChild);
+    var x0 = 20, x1 = 420; function X(v) { return x0 + v * (x1 - x0); }
+    CG.svgEl('line', { x1: x0, x2: x1, y1: 60, y2: 60, stroke: '#dde2ea', 'stroke-width': 8, 'stroke-linecap': 'round' }, svg);
+    CG.svgEl('line', { x1: X(ci[0]), x2: X(ci[1]), y1: 60, y2: 60, stroke: '#b9acef', 'stroke-width': 14, 'stroke-linecap': 'round' }, svg);
+    CG.svgEl('circle', { cx: X(b), cy: 60, r: 9, fill: '#6b4fd8' }, svg);
+    [0, 0.5, 1].forEach(function (t) { CG.svgText(svg, X(t), 95, t === 0 ? '0 unmethylated' : t === 1 ? 'fully methylated 1' : '0.5', { 'text-anchor': t === 0 ? 'start' : t === 1 ? 'end' : 'middle', 'font-size': 13, fill: '#5b6475' }); });
+  }
+  $('me-nr').addEventListener('input', draw); $('me-kr').addEventListener('input', draw); draw();
+})();
+
+// ---------- Compositional pitfall ----------
+(function () {
+  var svg = $('mg-chart'), base = [20, 30, 25, 25], cols = ['#d64545', '#2f6fd6', '#2e9e5b', '#e0a100'], names = ['A', 'B', 'C', 'D'];
+  function draw() {
+    var x = +$('mg').value; $('mg-x').textContent = x;
+    var abs = base.slice(); abs[0] = base[0] * x;
+    var tot = abs.reduce(function (a, b) { return a + b; }, 0);
+    while (svg.firstChild) svg.removeChild(svg.firstChild);
+    // absolute
+    CG.svgText(svg, 10, 20, 'Absolute amount (cells, unseen)', { 'font-size': 14, 'font-weight': 600 });
+    var maxAbs = 160;
+    abs.forEach(function (v, i) {
+      var w = v / maxAbs * 380;
+      CG.svgEl('rect', { x: 40, y: 32 + i * 28, width: w, height: 22, rx: 3, fill: cols[i] }, svg);
+      CG.svgText(svg, 20, 48 + i * 28, names[i], { 'font-size': 14, 'font-weight': 700 });
+      CG.svgText(svg, 46 + w, 48 + i * 28, v.toFixed(0), { 'font-size': 12, fill: '#5b6475' });
+    });
+    // relative stacked bar
+    CG.svgText(svg, 10, 175, 'What sequencing reports (proportions)', { 'font-size': 14, 'font-weight': 600 });
+    var xx = 20;
+    abs.forEach(function (v, i) {
+      var w = v / tot * 420;
+      CG.svgEl('rect', { x: xx, y: 188, width: w, height: 50, fill: cols[i] }, svg);
+      if (w > 34) CG.svgText(svg, xx + w / 2, 218, (v / tot * 100).toFixed(0) + '%', { 'text-anchor': 'middle', fill: '#fff', 'font-size': 14, 'font-weight': 700 });
+      xx += w;
+    });
+    CG.svgText(svg, 20, 270, 'B: ' + (base[1] / 100 * 100).toFixed(0) + '% → ' + (abs[1] / tot * 100).toFixed(0) + '%  even though B did not change.', { 'font-size': 14, fill: '#2f6fd6', 'font-weight': 600 });
+  }
+  $('mg').addEventListener('input', draw); draw();
+})();
+
+// ---------- Exit quiz ----------
+CG.mcq($('q1'), { id: 'quiz1', q: '1. Sample B has twice the reads of sample A. Gene G has 100 reads in A and 200 in B. Its CPM is…',
+  options: ['higher in B', 'the same', 'lower in B'], answer: 1, explain: 'Counts doubled with library size, so CPM is unchanged.' });
+CG.mcq($('q2'), { id: 'quiz2', q: '2. Poisson counts with mean 400 have variance…',
+  options: ['20', '400', '160,000'], answer: 1, explain: 'For Poisson, variance = mean. (Standard deviation is 20.)' });
+CG.mcq($('q3'), { id: 'quiz3', q: '3. 6 of 8 reads at a CpG are methylated. Is the site “75% methylated”?',
+  options: ['Yes, exactly', 'Estimate 0.75 with a wide interval', 'Cannot estimate'], answer: 1, explain: 'With n = 8 the 95% interval is roughly 0.41–0.93.' });
+CG.mcq($('q4'), { id: 'quiz4', q: '4. Mass spectrometry alone cannot distinguish…',
+  options: ['L and I', 'K and R', 'G and A'], answer: 0, explain: 'Leucine and isoleucine are isomers: identical mass (113.084 Da).' });
+</script>
+</body>
+</html>

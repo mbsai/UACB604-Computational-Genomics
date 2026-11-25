@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Class Control</title>
+<link rel="stylesheet" href="classroom.css">
+</head>
+<body>
+<main class="card wide">
+  <div class="course">UACB-604 · Teacher control</div>
+  <p class="err" id="err"></p>
+  <div class="grid">
+    <section>
+      <p class="muted" style="margin:0">Students: open this address and type your name</p>
+      <div class="join-url" id="url">…</div>
+      <h2>Lectures <span class="muted small">(opens in teacher mode; press F for fullscreen on the projector)</span></h2>
+      <div id="lectures"></div>
+    </section>
+    <section>
+      <h2 style="margin-top:0">In class now: <span id="count">0</span></h2>
+      <div class="chips" id="roster"></div>
+      <h2>Records</h2>
+      <a class="btn ghost" id="csv" href="#">Download answers (CSV)</a>
+      <button class="ghost" id="clear">Clear answers</button>
+      <p class="muted small" id="datafile"></p>
+      <h2>In the lecture</h2>
+      <ul class="small muted">
+        <li>Students follow your slide and step-by-step reveals.</li>
+        <li>Leave a game or quiz slide → results with names appear. Any key or click closes them.</li>
+        <li>Press <b>L</b> for the lecture leaderboard.</li>
+      </ul>
+    </section>
+  </div>
+</main>
+<script>
+(function () {
+  var key = new URLSearchParams(location.search).get('key') || '';
+  var $ = function (id) { return document.getElementById(id); };
+  function api(p) { return fetch(p + (p.indexOf('?') < 0 ? '?' : '&') + 'key=' + encodeURIComponent(key)).then(function (r) { return r.json(); }); }
+  api('/api/info').then(function (info) {
+    if (info.error) { $('err').textContent = 'Wrong or missing teacher key. Use the teacher link printed by the server.'; return; }
+    $('url').textContent = info.url.replace('http://', '');
+    $('datafile').textContent = 'Saved automatically to ' + info.data_file;
+    $('lectures').innerHTML = info.lectures.map(function (l) {
+      return '<div class="lect"><span>' + l.title + '</span><a class="btn" href="/' + l.path + '?role=teacher&key=' + encodeURIComponent(key) + '">Present</a></div>';
+    }).join('') || '<p class="muted">No lectures found.</p>';
+  });
+  $('csv').href = '/api/export.csv?key=' + encodeURIComponent(key);
+  $('clear').onclick = function () {
+    if (!confirm('Clear all answers collected so far? (Names stay; the saved file keeps earlier answers only until the next save.)')) return;
+    fetch('/api/clear', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ key: key }) }).then(refresh);
+  };
+  function refresh() {
+    api('/api/roster').then(function (r) {
+      if (!r.names) return;
+      $('count').textContent = r.names.length;
+      $('roster').innerHTML = r.names.map(function (n) { var s = document.createElement('span'); s.className = 'chip'; s.textContent = n; return s.outerHTML; }).join('');
+    });
+  }
+  refresh(); setInterval(refresh, 3000);
+})();
+</script>
+</body>
+</html>

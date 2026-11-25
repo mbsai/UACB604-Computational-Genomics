@@ -1,0 +1,472 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>1.3 Genome Organisation</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.1.0/reveal.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.1.0/theme/white.min.css">
+<link rel="stylesheet" href="../assets/css/course.css">
+<style>
+  .slider-row { display: grid; grid-template-columns: 11em 1fr 6em; gap: 0.6em; align-items: center; margin: 0.15em 0; }
+  .slider-row b { text-align: right; font-family: var(--r-code-font); }
+  .target { cursor: pointer; }
+  .target.hit { border-color: var(--good); background: #e3f6ea; color: #1f7a45; }
+  .card-flash { font-size: 1.25em; font-weight: 700; min-height: 2.6em; display: flex; align-items: center; justify-content: center; text-align: center; }
+  .exon-row label { display: inline-flex; align-items: center; gap: 0.3em; margin-right: 1em; cursor: pointer; }
+  .exon-row input { width: 1.1em; height: 1.1em; accent-color: var(--accent); }
+</style>
+</head>
+<body>
+<div class="reveal"><div class="slides">
+
+<!-- 1 · Title -->
+<section class="title-slide center">
+  <div class="course">UACB-604 · Computational Genomics · Lecture 1.3</div>
+  <h1>How genetic information<br>is organised</h1>
+  <div class="dna-strip" id="title-dna"></div>
+  <p class="muted small">Same code, very different filing systems: bacteria vs eukaryotes.</p>
+  <aside class="notes">45 min. Lecture 1.1: a genome is a string. 1.2: omics as data. Today: where the genes sit inside the string, and how that differs between bacteria and eukaryotes.</aside>
+</section>
+
+<!-- 2 · Hook -->
+<section>
+  <div class="kicker">Warm-up <span class="badge">interactive</span></div>
+  <h2>50 kb of genome, two very different views</h2>
+  <svg id="win-chart" viewBox="0 0 1180 250" width="100%"></svg>
+  <div class="cols" style="margin-top:0.2em">
+    <div class="panel" id="hook-q"></div>
+    <div class="small">
+      <p>Bacteria pack genes edge to edge. In human DNA a gene is an island of short <b>exons</b> in a sea of <b>introns</b> and <b>intergenic</b> DNA.</p>
+      <p class="tiny">Illustration: gene positions drawn at random with realistic sizes, not real coordinates.</p>
+    </div>
+  </div>
+  <aside class="notes">3 min. Students vote first, then look at the picture. Answer: about 1–1.5% of the human genome is protein-coding.</aside>
+</section>
+
+<!-- 3 · Genome builder -->
+<section data-results="board">
+  <div class="kicker">Game: build a genome <span class="badge game">game</span> <span class="badge math">maths</span></div>
+  <h2>Can you rebuild these three genomes?</h2>
+  <div class="cols w60">
+    <div class="widget">
+      <div class="slider-row"><span>number of genes</span><input type="range" id="b-n" min="500" max="30000" step="100" value="1000"><b id="b-n-v"></b></div>
+      <div class="slider-row"><span>exons per gene</span><input type="range" id="b-e" min="1" max="15" step="1" value="1"><b id="b-e-v"></b></div>
+      <div class="slider-row"><span>exon length (bp)</span><input type="range" id="b-el" min="50" max="2000" step="10" value="1000"><b id="b-el-v"></b></div>
+      <div class="slider-row"><span>intron length (bp)</span><input type="range" id="b-il" min="0" max="10000" step="100" value="0"><b id="b-il-v"></b></div>
+      <div class="slider-row"><span>gap between genes</span><input type="range" id="b-g" min="1" max="5.5" step="0.05" value="2"><b id="b-g-v"></b></div>
+      <svg id="b-unit" viewBox="0 0 700 60" width="100%" style="margin-top:0.3em"></svg>
+      <div class="stat-row">
+        <div class="stat"><b id="b-size"></b><span>genome size</span></div>
+        <div class="stat"><b id="b-cod"></b><span>coding fraction</span></div>
+        <div class="stat"><b id="b-dens"></b><span>genes per Mb</span></div>
+      </div>
+    </div>
+    <div class="widget">
+      <p style="margin-top:0">Hit each target within <b>±20%</b> on both numbers:</p>
+      <button class="target" data-t="ecoli"><i>E. coli</i>: 4.6 Mb · 86% coding · ~4,300 genes</button>
+      <button class="target" data-t="yeast">Yeast: 12 Mb · 70% coding · ~6,000 genes</button>
+      <button class="target" data-t="human">Human: 3.1 Gb · 1.2% coding · ~20,000 genes</button>
+      <div class="feedback" id="b-fb"></div>
+      <p class="small">Model: genome = genes × (exons × exon length + (exons − 1) × intron length + gap).</p>
+    </div>
+  </div>
+  <aside class="notes">8 min. Teams race to hit all three targets. Then ask: which slider did you have to move most to go from yeast to human? (Gap between genes, then intron length — not gene number.)</aside>
+</section>
+
+<!-- 4 · Prokaryotes -->
+<section>
+  <div class="kicker">Prokaryotes <span class="badge bio">biology</span> <span class="badge math">maths</span></div>
+  <h2>Bacteria: compact, co-oriented, clustered</h2>
+  <div class="cols">
+    <div class="small">
+      <ul>
+        <li>Usually one <b>circular</b> chromosome, plus small circular <b>plasmids</b>.</li>
+        <li>No introns. ~86% of <i>E. coli</i> codes for protein.</li>
+        <li class="fragment"><b>Operons:</b> neighbouring genes on the same strand, read into one mRNA (e.g. <i>lacZYA</i>).</li>
+        <li class="fragment">Genes prefer the <b>leading strand</b> of replication.</li>
+      </ul>
+    </div>
+    <div class="panel small fragment">
+      <h3>Testable predictions</h3>
+      <p>If gene orientation were random:</p>
+      <ul>
+        <li>P(two neighbours on the same strand) = 0.5</li>
+        <li>P(gene on leading strand) = 0.5</li>
+      </ul>
+      <p>In <i>E. coli</i> (you'll measure this in the notebook):</p>
+      <div class="stat-row">
+        <div class="stat"><b>70.8%</b><span>neighbours on same strand</span></div>
+        <div class="stat"><b>54.8%</b><span>genes on leading strand</span></div>
+      </div>
+      <p class="tiny">With 4,318 genes, random orientation would give 50% ± 1.5%. Both are far outside that.</p>
+    </div>
+  </div>
+  <p class="small fragment">The most common gap between same-strand neighbours is <b>−4 bp</b>: the stop codon <code>TGA</code> of one gene overlaps the start <code>ATG</code> of the next, as in <code>…A<b>TGA</b>…</code> read two ways. That is an operon fingerprint you can detect with a computer.</p>
+  <aside class="notes">5 min. Write ATGA on the board: frame 1 reads …TGA (stop), the next gene starts at ATG one base earlier → overlap of 4.</aside>
+</section>
+
+<!-- 5 · Eukaryotes + splicing -->
+<section>
+  <div class="kicker">Eukaryotes <span class="badge">interactive</span> <span class="badge math">maths</span></div>
+  <h2>Exons, introns and arithmetic mod 3</h2>
+  <div class="cols w60">
+    <div class="widget">
+      <p style="margin-top:0">A gene with 6 exons. Exons 2–5 can be <b>skipped</b> by alternative splicing. Untick to skip:</p>
+      <div class="exon-row" id="ex-boxes"></div>
+      <svg id="ex-chart" viewBox="0 0 700 120" width="100%"></svg>
+      <div class="stat-row">
+        <div class="stat"><b id="ex-len"></b><span>mRNA coding length</span></div>
+        <div class="stat"><b id="ex-frame"></b><span>reading frame</span></div>
+      </div>
+    </div>
+    <div>
+      <p class="small">Codons are read in threes. Skipping an exon of length \(\ell\) keeps the protein in frame only if
+      $$\ell \equiv 0 \pmod 3$$
+      Otherwise every codon after it is garbled, usually hitting a stop soon.</p>
+      <div class="panel" id="ex-q"></div>
+      <p class="tiny fragment">Real record: fruit-fly <i>Dscam</i> has 4 clusters of alternative exons (12 × 48 × 33 × 2) = <b>38,016</b> possible proteins from one gene.</p>
+    </div>
+  </div>
+  <aside class="notes">7 min. Exon lengths: 132 | 120, 98, 150, 77 | 209 (total 786 = 262 codons). Exons 2–5 optional. Residues mod 3: 0, 2, 0, 2. Frame-keeping subsets: {}, {2}, {4}, {2,4} → 4 of 16. Skipping both 98 and 77 removes 175 bp ≡ 1 (mod 3), so it still shifts.</aside>
+</section>
+
+<!-- 6 · Intron lengths: skewed distributions -->
+<section>
+  <div class="kicker">Eukaryotes <span class="badge">interactive</span> <span class="badge math">maths</span></div>
+  <h2>Intron lengths: why the mean misleads</h2>
+  <div class="cols w60">
+    <div><svg id="ln-chart" viewBox="0 0 640 330" width="100%"></svg></div>
+    <div class="widget">
+      <p style="margin-top:0">Human intron lengths are strongly right-skewed: most are a few kb, a few are over 100 kb. A <b>log-normal</b> model: \(\log L \sim \mathcal N(\mu, \sigma^2)\).</p>
+      spread σ = <b id="ln-s"></b>
+      <input type="range" id="ln-sl" min="0.2" max="2" step="0.05" value="1.2">
+      <div class="stat-row">
+        <div class="stat"><b id="ln-med"></b><span>median</span></div>
+        <div class="stat"><b id="ln-mean"></b><span>mean</span></div>
+      </div>
+      <p style="font-size:1.3em">$$\text{median} = e^{\mu},\qquad \text{mean} = e^{\mu + \sigma^2/2}$$</p>
+      <p class="small fragment">Report medians for lengths, counts and expression. One 1 Mb intron can drag the mean far from a typical intron.</p>
+    </div>
+  </div>
+  <aside class="notes">4 min. Median fixed at 1.5 kb (μ = ln 1500). At σ = 1.2, mean ≈ 1.5 kb × e^0.72 ≈ 3.1 kb. Ask: what happens to the mean when σ doubles?</aside>
+</section>
+
+<!-- 7 · Repeats -->
+<section>
+  <div class="kicker">What fills a big genome? <span class="badge bio">biology</span></div>
+  <h2>Nearly half of our genome is old transposons</h2>
+  <svg id="rep-chart" viewBox="0 0 1180 140" width="100%"></svg>
+  <div class="cols small">
+    <div>
+      <ul>
+        <li><b>LINEs</b> (e.g. L1): long, can copy themselves.</li>
+        <li><b>SINEs</b> (e.g. <i>Alu</i>): ~300 bp, about 1 million copies, ~10% of the genome on their own.</li>
+        <li><b>LTR</b> elements: remnants of retroviruses.</li>
+      </ul>
+      <p class="tiny">Fractions from the initial human genome paper (Lander et al., <i>Nature</i> 2001).</p>
+    </div>
+    <div class="callout q">Link to Lecture 1.1: we computed that 16-mers should be unique in a <i>random</i> 3 Gb genome. A million near-identical <i>Alu</i> copies break that assumption. This is why assembling human genomes from short reads is hard (Units 5–7).</div>
+  </div>
+  <aside class="notes">4 min. Repeat annotation is Unit 8 (RepeatMasker).</aside>
+</section>
+
+<!-- 8 · Organelles -->
+<section>
+  <div class="kicker">Genomes inside genomes <span class="badge bio">biology</span></div>
+  <h2>Organelle genomes look bacterial</h2>
+  <div class="cols">
+    <div class="panel small">
+      <h3>Human mitochondrial DNA</h3>
+      <div class="big-num">16,569 bp</div>
+      <ul>
+        <li>Circular, no introns, genes on both strands, almost no gaps</li>
+        <li>37 genes: 13 proteins, 22 tRNAs, 2 rRNAs</li>
+        <li>Hundreds to thousands of copies per cell; inherited from the mother</li>
+      </ul>
+    </div>
+    <div class="panel small">
+      <h3>Chloroplast DNA</h3>
+      <div class="big-num">~120–160 kb</div>
+      <ul>
+        <li>Circular, with operon-like gene clusters</li>
+      </ul>
+      <div class="callout">Both descend from engulfed bacteria (endosymbiosis). The evidence is phylogenetic: their genes cluster with bacterial genes on evolutionary trees (Unit 9).</div>
+    </div>
+  </div>
+  <aside class="notes">2 min. Maths aside: mtDNA's high copy number means it is over-represented in sequencing data — a coverage spike they will see in Unit 5.</aside>
+</section>
+
+<!-- 9 · Classification game -->
+<section data-results="board">
+  <div class="kicker">Rapid fire <span class="badge game">game</span></div>
+  <h2>Prokaryote or eukaryote?</h2>
+  <div class="widget panel" style="max-width:900px;margin:0 auto">
+    <p class="tiny" style="text-align:center;margin:0">Card <span id="cl-i">1</span> of <span id="cl-n"></span> · score <b id="cl-score">0</b></p>
+    <div class="card-flash" id="cl-card"></div>
+    <p style="text-align:center">
+      <button id="cl-p" style="font-size:1.2em">🦠 Prokaryote</button>
+      <button id="cl-e" style="font-size:1.2em">🧬 Eukaryote</button>
+    </p>
+    <div class="feedback" id="cl-fb" style="text-align:center"></div>
+    <p style="text-align:center"><button id="cl-next" class="primary">Next card →</button></p>
+  </div>
+  <aside class="notes">5 min. Eight cards, each student at their own pace. Leaderboard appears when you move on.</aside>
+</section>
+
+<!-- 10 · Quiz -->
+<section>
+  <div class="kicker">Exit quiz <span class="badge game">game</span></div>
+  <h2>Four questions</h2>
+  <div class="cols">
+    <div class="panel" id="q1"></div>
+    <div class="panel" id="q2"></div>
+    <div class="panel" id="q3"></div>
+    <div class="panel" id="q4"></div>
+  </div>
+</section>
+
+<!-- 11 · Wrap-up -->
+<section>
+  <div class="kicker">Wrap-up</div>
+  <h2>Today in one slide</h2>
+  <ul>
+    <li>Bacteria: ~1 gene per kb, ~86% coding, operons, leading-strand bias. Each is a testable statistical signal.</li>
+    <li>Human: ~6.5 genes per Mb, ~1.2% coding; genes are islands of exons in introns and repeats.</li>
+    <li>Alternative splicing is combinatorics plus arithmetic mod 3.</li>
+    <li>Length data are skewed: prefer medians and log scales.</li>
+    <li>Repeats break "random string" assumptions, which matters for assembly.</li>
+  </ul>
+  <div class="cols" style="margin-top:0.6em">
+    <div class="panel small"><b>Notebook (Colab, Python):</b> <a href="https://colab.research.google.com/github/mbsai/UACB604-Computational-Genomics/blob/main/unit01/notebooks/1.3_genome_organisation.ipynb" target="_blank">1.3_genome_organisation.ipynb</a><br>Parse GenBank annotation with Biopython; measure coding fraction, strand bias and operon gaps in <i>E. coli</i>; compare a yeast chromosome.</div>
+    <div class="panel small"><b>Reading:</b> Brown, <i>Genomes 5</i>, ch. 7–8 · Pevsner, ch. 17–18<br><b>Next: Lecture 1.4</b>, genome maps.</div>
+  </div>
+</section>
+
+</div></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.1.0/reveal.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.1.0/plugin/math/math.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.1.0/plugin/notes/notes.min.js"></script>
+<script src="../assets/js/live.js"></script>
+<script src="../assets/js/course.js"></script>
+<script>
+CG.initDeck();
+var $ = function (id) { return document.getElementById(id); };
+$('title-dna').innerHTML = CG.colorSeq(CG.randomSeq(70));
+
+// ---------- Hook: two 50 kb windows ----------
+(function () {
+  var svg = $('win-chart'), x0 = 150, x1 = 1170, W = 50000;
+  function X(p) { return x0 + p / W * (x1 - x0); }
+  function arrow(y, a, b, strand, fill, h) {
+    var xa = X(a), xb = X(b), tip = Math.min(10, (xb - xa) / 2);
+    var d = strand > 0 ? 'M' + xa + ' ' + (y - h) + 'L' + (xb - tip) + ' ' + (y - h) + 'L' + xb + ' ' + y + 'L' + (xb - tip) + ' ' + (y + h) + 'L' + xa + ' ' + (y + h) + 'Z'
+                       : 'M' + xb + ' ' + (y - h) + 'L' + (xa + tip) + ' ' + (y - h) + 'L' + xa + ' ' + y + 'L' + (xa + tip) + ' ' + (y + h) + 'L' + xb + ' ' + (y + h) + 'Z';
+    CG.svgEl('path', { d: d, fill: fill }, svg);
+  }
+  CG.svgText(svg, 0, 62, 'E. coli', { 'font-size': 20, 'font-weight': 700, 'font-style': 'italic' });
+  CG.svgText(svg, 0, 84, '~45 genes', { 'font-size': 14, fill: '#5b6475' });
+  CG.svgEl('line', { x1: x0, x2: x1, y1: 70, y2: 70, stroke: '#dde2ea', 'stroke-width': 2 }, svg);
+  var p = 100, strand = 1;
+  while (p < W - 400) {
+    var len = Math.round(400 + Math.random() * 1400);
+    if (Math.random() < 0.3) strand = -strand;                  // runs of same strand ≈ operons
+    arrow(strand > 0 ? 55 : 85, p, Math.min(W, p + len), strand, strand > 0 ? '#6b4fd8' : '#b9acef', 11);
+    p += len + Math.round(Math.random() * 180 - 20);
+  }
+  CG.svgText(svg, 0, 182, 'Human', { 'font-size': 20, 'font-weight': 700 });
+  CG.svgText(svg, 0, 204, '1 gene, 8 exons', { 'font-size': 14, fill: '#5b6475' });
+  CG.svgEl('line', { x1: x0, x2: x1, y1: 190, y2: 190, stroke: '#dde2ea', 'stroke-width': 2 }, svg);
+  var gs = 9000, ge = 38000;
+  CG.svgEl('line', { x1: X(gs), x2: X(ge), y1: 190, y2: 190, stroke: '#6b4fd8', 'stroke-width': 2 }, svg);
+  for (var k = 0; k < 8; k++) {
+    var ex = gs + k * (ge - gs - 200) / 7;
+    CG.svgEl('rect', { x: X(ex), y: 178, width: Math.max(3, X(ex + 170) - X(ex)), height: 24, fill: '#6b4fd8' }, svg);
+  }
+  CG.svgText(svg, X(23500), 228, 'exons (dark) joined by introns (line)', { 'text-anchor': 'middle', 'font-size': 13, fill: '#5b6475' });
+  CG.svgText(svg, X(45000), 180, 'intergenic', { 'text-anchor': 'middle', 'font-size': 13, fill: '#9aa3b2' });
+  CG.svgText(svg, X(3500), 180, 'intergenic', { 'text-anchor': 'middle', 'font-size': 13, fill: '#9aa3b2' });
+  [0, 10, 20, 30, 40, 50].forEach(function (kb) { CG.svgText(svg, X(kb * 1000), 246, kb + ' kb', { 'text-anchor': 'middle', 'font-size': 12, fill: '#5b6475' }); });
+})();
+CG.mcq($('hook-q'), { id: 'coding-pct', q: 'Vote: what fraction of the human genome codes for protein?',
+  options: ['~1.5%', '~10%', '~25%', '~50%'], answer: 0,
+  explain: 'Only about 1–1.5%. (In <i>E. coli</i> it is ~86%.)' });
+
+// ---------- Genome builder ----------
+(function () {
+  var T = { ecoli: { size: 4.6e6, cod: 0.86, name: 'E. coli' }, yeast: { size: 12e6, cod: 0.70, name: 'Yeast' }, human: { size: 3.1e9, cod: 0.012, name: 'Human' } };
+  var hit = {}, svg = $('b-unit');
+  function v(id) { return +$(id).value; }
+  function draw() {
+    var n = v('b-n'), e = v('b-e'), el = v('b-el'), il = v('b-il'), gap = Math.round(Math.pow(10, v('b-g')));
+    var gene = e * el + (e - 1) * il, size = n * (gene + gap), cod = n * e * el / size;
+    $('b-n-v').textContent = n.toLocaleString(); $('b-e-v').textContent = e; $('b-el-v').textContent = el;
+    $('b-il-v').textContent = il.toLocaleString(); $('b-g-v').textContent = CG.fmtNum(gap);
+    $('b-size').textContent = CG.fmtNum(size) + 'b'; $('b-cod').textContent = (cod * 100).toFixed(cod < 0.1 ? 2 : 1) + '%';
+    $('b-dens').textContent = CG.fmtNum(n / (size / 1e6));
+    // one gene + gap, drawn on a log-ish proportional bar
+    while (svg.firstChild) svg.removeChild(svg.firstChild);
+    var unit = gene + gap, x = 0, scale = 690 / unit;
+    for (var k = 0; k < e; k++) {
+      CG.svgEl('rect', { x: 5 + x * scale, y: 15, width: Math.max(1.5, el * scale), height: 26, fill: '#6b4fd8' }, svg); x += el;
+      if (k < e - 1) { CG.svgEl('line', { x1: 5 + x * scale, x2: 5 + (x + il) * scale, y1: 28, y2: 28, stroke: '#6b4fd8', 'stroke-width': 2 }, svg); x += il; }
+    }
+    CG.svgEl('line', { x1: 5 + x * scale, x2: 695, y1: 28, y2: 28, stroke: '#dde2ea', 'stroke-width': 2, 'stroke-dasharray': '4 4' }, svg);
+    CG.svgText(svg, 5, 56, 'one gene + gap, to scale', { 'font-size': 12, fill: '#5b6475' });
+    Object.keys(T).forEach(function (t) {
+      var ok = Math.abs(size / T[t].size - 1) <= 0.2 && Math.abs(cod / T[t].cod - 1) <= 0.2;
+      if (ok && !hit[t]) {
+        hit[t] = true;
+        document.querySelector('[data-t="' + t + '"]').classList.add('hit');
+        $('b-fb').className = 'feedback ok'; $('b-fb').textContent = '✓ ' + T[t].name + ' rebuilt! (' + Object.keys(hit).length + '/3)';
+        CG.report(svg, 'build-' + t, 'Genome builder: ' + T[t].name, true, Math.round(size) + ' bp, ' + (cod * 100).toFixed(2) + '%');
+      }
+    });
+  }
+  ['b-n', 'b-e', 'b-el', 'b-il', 'b-g'].forEach(function (id) { $(id).addEventListener('input', draw); });
+  document.querySelectorAll('.target').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var t = T[b.dataset.t];
+      $('b-fb').className = 'feedback'; $('b-fb').textContent = 'Target: ' + CG.fmtNum(t.size) + 'b and ' + (t.cod * 100) + '% coding. Hint: start from the gene count.';
+    });
+  });
+  draw();
+})();
+
+// ---------- Exon skipping ----------
+(function () {
+  var ex = [{ n: 1, len: 132, opt: false }, { n: 2, len: 120, opt: true }, { n: 3, len: 98, opt: true },
+            { n: 4, len: 150, opt: true }, { n: 5, len: 77, opt: true }, { n: 6, len: 209, opt: false }];
+  var on = ex.map(function () { return true; }), boxes = $('ex-boxes'), svg = $('ex-chart');
+  ex.forEach(function (x, i) {
+    if (!x.opt) return;
+    var lab = document.createElement('label');
+    lab.innerHTML = '<input type="checkbox" checked> exon ' + x.n + ' <span class="muted">(' + x.len + ' bp)</span>';
+    lab.querySelector('input').addEventListener('change', function (e) { on[i] = e.target.checked; draw(); });
+    boxes.appendChild(lab);
+  });
+  function draw() {
+    while (svg.firstChild) svg.removeChild(svg.firstChild);
+    var total = 0, skipped = 0;
+    // pre-mRNA
+    CG.svgText(svg, 0, 22, 'gene', { 'font-size': 13, fill: '#5b6475' });
+    CG.svgEl('line', { x1: 70, x2: 690, y1: 17, y2: 17, stroke: '#9aa3b2', 'stroke-width': 2 }, svg);
+    ex.forEach(function (x, i) {
+      var gx = 70 + i * 105;
+      CG.svgEl('rect', { x: gx, y: 5, width: x.len / 2.4, height: 24, rx: 3, fill: on[i] ? '#6b4fd8' : '#dde2ea' }, svg);
+      CG.svgText(svg, gx + x.len / 4.8, 22, x.n, { 'text-anchor': 'middle', 'font-size': 13, fill: on[i] ? '#fff' : '#5b6475', 'font-weight': 700 });
+    });
+    // mRNA
+    CG.svgText(svg, 0, 82, 'mRNA', { 'font-size': 13, fill: '#5b6475' });
+    var mx = 70;
+    ex.forEach(function (x, i) {
+      if (!on[i]) { skipped += x.len; return; }
+      total += x.len;
+      var w = x.len / 2.4;
+      CG.svgEl('rect', { x: mx, y: 65, width: w, height: 24, fill: '#6b4fd8', stroke: '#fff', 'stroke-width': 1.5 }, svg);
+      CG.svgText(svg, mx + w / 2, 82, x.n, { 'text-anchor': 'middle', 'font-size': 13, fill: '#fff', 'font-weight': 700 });
+      mx += w;
+    });
+    var shift = skipped % 3;
+    $('ex-len').textContent = total + ' bp';
+    $('ex-frame').textContent = shift === 0 ? '✓ in frame' : '✗ shifted by ' + shift;
+    $('ex-frame').style.color = shift === 0 ? 'var(--good)' : 'var(--bad)';
+    CG.svgText(svg, 690, 112, total % 3 === 0 ? total / 3 + ' codons' : (total / 3).toFixed(2) + ' codons?!', { 'text-anchor': 'end', 'font-size': 13, fill: '#5b6475' });
+  }
+  draw();
+})();
+CG.mcq($('ex-q'), { id: 'frame-count', q: 'Exons 2–5 can each be kept or skipped: 2<sup>4</sup> = 16 mRNAs. How many keep the reading frame?',
+  options: ['2', '4', '8', '16'], answer: 1,
+  explain: 'Only exons 2 (120) and 4 (150) are multiples of 3. 98 + 77 = 175 is not. So 2² = 4 combinations.' });
+
+// ---------- Log-normal intron lengths ----------
+(function () {
+  var svg = $('ln-chart'), MED = 1500;
+  function draw() {
+    var s = +$('ln-sl').value, mu = Math.log(MED), mean = Math.exp(mu + s * s / 2);
+    $('ln-s').textContent = s.toFixed(2); $('ln-med').textContent = (MED / 1000).toFixed(1) + ' kb'; $('ln-mean').textContent = (mean / 1000).toFixed(1) + ' kb';
+    while (svg.firstChild) svg.removeChild(svg.firstChild);
+    var x0 = 50, x1 = 620, y0 = 280, y1 = 20, maxL = 20000, n = 200, pts = [], peak = 0;
+    for (var i = 1; i <= n; i++) {
+      var L = i / n * maxL, pdf = Math.exp(-Math.pow(Math.log(L) - mu, 2) / (2 * s * s)) / (L * s * Math.sqrt(2 * Math.PI));
+      pts.push([L, pdf]); peak = Math.max(peak, pdf);
+    }
+    function X(L) { return x0 + L / maxL * (x1 - x0); }
+    function Y(p) { return y0 - p / peak * (y0 - y1); }
+    var d = 'M' + X(0) + ' ' + y0; pts.forEach(function (q) { d += 'L' + X(q[0]) + ' ' + Y(q[1]); }); d += 'L' + X(maxL) + ' ' + y0 + 'Z';
+    CG.svgEl('path', { d: d, fill: '#b9acef', 'fill-opacity': 0.7, stroke: '#6b4fd8', 'stroke-width': 2 }, svg);
+    CG.svgEl('line', { x1: x0, x2: x1, y1: y0, y2: y0, stroke: '#5b6475' }, svg);
+    [0, 5, 10, 15, 20].forEach(function (k) { CG.svgText(svg, X(k * 1000), y0 + 18, k + ' kb', { 'text-anchor': 'middle', 'font-size': 12, fill: '#5b6475' }); });
+    CG.svgText(svg, (x0 + x1) / 2, y0 + 40, 'intron length', { 'text-anchor': 'middle', 'font-size': 14 });
+    [[MED, '#2e9e5b', 'median'], [Math.min(mean, maxL), '#d64545', mean > maxL ? 'mean →' : 'mean']].forEach(function (q, j) {
+      CG.svgEl('line', { x1: X(q[0]), x2: X(q[0]), y1: y1, y2: y0, stroke: q[1], 'stroke-width': 3, 'stroke-dasharray': '6 4' }, svg);
+      CG.svgText(svg, X(q[0]) + 6, y1 + 16 + j * 20, q[2], { fill: q[1], 'font-size': 14, 'font-weight': 700 });
+    });
+  }
+  $('ln-sl').addEventListener('input', draw); draw();
+})();
+
+// ---------- Repeats bar ----------
+(function () {
+  var svg = $('rep-chart'), parts = [['LINEs', 20.4, '#6b4fd8'], ['SINEs (Alu…)', 13.1, '#8b7ad6'], ['LTR', 8.3, '#b9acef'], ['DNA transposons', 2.9, '#d6cdf7'],
+    ['protein-coding', 1.2, '#2e9e5b'], ['everything else (introns, regulatory, unique non-coding, other repeats)', 54.1, '#eef0f4']];
+  var x = 10, W = 1160;
+  parts.forEach(function (p) {
+    var w = p[1] / 100 * W;
+    CG.svgEl('rect', { x: x, y: 20, width: w, height: 60, fill: p[2] }, svg);
+    if (w > 70) CG.svgText(svg, x + 8, 46, p[0], { 'font-size': 15, 'font-weight': 600, fill: p[2] === '#eef0f4' || p[2] === '#d6cdf7' ? '#1d2433' : '#fff' });
+    if (w > 70) CG.svgText(svg, x + 8, 68, p[1] + '%', { 'font-size': 14, fill: p[2] === '#eef0f4' || p[2] === '#d6cdf7' ? '#5b6475' : '#fff' });
+    x += w;
+  });
+  CG.svgText(svg, 10, 108, '← transposon-derived: ~45% of the human genome →', { 'font-size': 15, fill: '#6b4fd8', 'font-weight': 600 });
+  CG.svgText(svg, 10 + (44.7 / 100) * W + 2, 108, '▲ protein-coding ~1.2%', { 'font-size': 14, fill: '#2e9e5b', 'font-weight': 600 });
+})();
+
+// ---------- Prokaryote / eukaryote cards ----------
+(function () {
+  var cards = [
+    ['Most genes are interrupted by introns', 'E'],
+    ['About 86% of the genome codes for protein', 'P'],
+    ['A Shine–Dalgarno sequence sits just before the start codon', 'P'],
+    ['Telomeres protect the chromosome ends', 'E'],
+    ['Neighbouring genes are often 100 kb apart', 'E'],
+    ['Transcription and translation happen at the same time and place', 'P'],
+    ['mRNA gets a 5′ cap and a poly-A tail', 'E'],
+    ['One circular chromosome of about 5 Mb', 'P']
+  ];
+  var i = 0, score = 0, answered = false;
+  $('cl-n').textContent = cards.length;
+  function show() { $('cl-card').textContent = cards[i][0]; $('cl-i').textContent = i + 1; $('cl-fb').textContent = ''; answered = false;
+    $('cl-p').className = ''; $('cl-e').className = ''; }
+  function pick(ans, btn) {
+    if (answered) return; answered = true;
+    var ok = ans === cards[i][1]; if (ok) score++;
+    btn.className = ok ? 'right' : 'wrong'; $('cl-score').textContent = score;
+    $('cl-fb').className = 'feedback ' + (ok ? 'ok' : 'no');
+    $('cl-fb').textContent = (ok ? '✓ ' : '✗ ') + (cards[i][1] === 'P' ? 'Prokaryote' : 'Eukaryote');
+    CG.report(btn, 'cls-' + i, 'P or E: ' + cards[i][0], ok, ans);
+  }
+  $('cl-p').onclick = function () { pick('P', $('cl-p')); };
+  $('cl-e').onclick = function () { pick('E', $('cl-e')); };
+  $('cl-next').onclick = function () {
+    if (i < cards.length - 1) { i++; show(); }
+    else { $('cl-fb').className = 'feedback ok'; $('cl-fb').textContent = 'Done! You scored ' + score + '/' + cards.length + '.'; }
+  };
+  show();
+})();
+
+// ---------- Exit quiz ----------
+CG.mcq($('q1'), { id: 'quiz1', q: '1. 4,300 genes in a 4.6 Mb genome. Genes per Mb ≈',
+  options: ['93', '930', '9,300'], answer: 1, explain: '4,300 / 4.6 ≈ 935.' });
+CG.mcq($('q2'), { id: 'quiz2', q: '2. Skipping which exon keeps the reading frame?',
+  options: ['100 bp', '101 bp', '102 bp'], answer: 2, explain: '102 = 3 × 34, so 102 ≡ 0 (mod 3).' });
+CG.mcq($('q3'), { id: 'quiz3', q: '3. Two same-strand E. coli genes overlap by 4 bp. Most likely…',
+  options: ['stop and start codons share bases (ATGA)', 'a sequencing error', 'an intron'], answer: 0,
+  explain: 'TGA (stop) and ATG (start) overlap in ATGA: a common operon signature.' });
+CG.mcq($('q4'), { id: 'quiz4', q: '4. For right-skewed data like intron lengths…',
+  options: ['mean &gt; median', 'mean = median', 'mean &lt; median'], answer: 0,
+  explain: 'A few very long introns pull the mean up. Log-normal: mean = median × e<sup>σ²/2</sup>.' });
+</script>
+</body>
+</html>

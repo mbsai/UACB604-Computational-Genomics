@@ -1,0 +1,495 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>1.1 Genome as a String</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.1.0/reveal.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.1.0/theme/white.min.css">
+<link rel="stylesheet" href="../assets/css/course.css">
+</head>
+<body>
+<div class="reveal"><div class="slides">
+
+<!-- 1 · Title -->
+<section class="title-slide center">
+  <div class="course">UACB-604 · Computational Genomics · Lecture 1.1</div>
+  <h1>What is a genome,<br>to a mathematician?</h1>
+  <div class="dna-strip" id="title-dna"></div>
+  <p class="muted small">Use ← → to move · <b>F</b> fullscreen · <b>S</b> speaker notes · slides marked <span class="badge">interactive</span> respond to you</p>
+  <aside class="notes">Plan for 45 min. Start the timer chip at the bottom-left. Today: genome size game → genome as a string → information → k-mers → genes as a signal in noise → exit quiz.</aside>
+</section>
+
+<!-- 2 · Why now -->
+<section>
+  <div class="kicker">Why this course exists</div>
+  <h2>Biology became a data science</h2>
+  <div class="cols">
+    <div class="panel">
+      <h3>2003 · Human Genome Project</h3>
+      <div class="big-num">13 years</div>
+      <p>about USD 3 billion, hundreds of labs, one (mostly) complete human genome</p>
+    </div>
+    <div class="panel">
+      <h3>Today</h3>
+      <div class="big-num">~1 day</div>
+      <p>a few hundred US dollars to re-sequence a human genome on one machine</p>
+    </div>
+  </div>
+  <div class="callout fragment">The bottleneck moved from <b>getting</b> the data to <b>making sense</b> of it. That is a job for algorithms, probability and statistics, which is where you come in.</div>
+  <aside class="notes">2 min. Ask: who has heard of the Human Genome Project? Point out the public archives now hold many petabases of sequence.</aside>
+</section>
+
+<!-- 3 · Higher or lower game -->
+<section data-results="board">
+  <div class="kicker">Warm-up game <span class="badge game">game</span></div>
+  <h2>Higher or lower? Genome size edition</h2>
+  <div class="widget" id="hl-game">
+    <div class="cols" style="align-items:center">
+      <div class="panel" style="text-align:center">
+        <div class="tiny">KNOWN</div>
+        <div id="hl-a-name" style="font-size:1.5em;font-weight:800"></div>
+        <div id="hl-a-size" class="big-num" style="color:var(--accent)"></div>
+        <div class="tiny">base pairs (haploid)</div>
+      </div>
+      <div class="panel" style="text-align:center">
+        <div class="tiny">MYSTERY</div>
+        <div id="hl-b-name" style="font-size:1.5em;font-weight:800"></div>
+        <div id="hl-b-size" class="big-num" style="color:var(--muted)">?</div>
+        <div class="tiny">base pairs (haploid)</div>
+      </div>
+    </div>
+    <p style="text-align:center;margin-top:0.6em">
+      <button id="hl-higher">▲ Higher</button><button id="hl-lower">▼ Lower</button><button id="hl-next" class="primary">Next pair →</button>
+    </p>
+    <div class="feedback" id="hl-fb" style="text-align:center"></div>
+    <p class="tiny" style="text-align:center">Score <b id="hl-score">0</b> / <b id="hl-total">0</b> · round <span id="hl-round">1</span> of <span id="hl-rounds"></span></p>
+  </div>
+  <aside class="notes">6 min. Let the class vote by show of hands before clicking. Keep a running class score. The surprises: onion &gt; human, wheat &gt; human, lungfish &gt; human by ~14×.</aside>
+</section>
+
+<!-- 4 · C-value paradox -->
+<section>
+  <div class="kicker">What the game showed <span class="badge bio">biology</span></div>
+  <h2>Genome size does not track complexity</h2>
+  <div class="cols w60">
+    <div><svg id="cval-chart" viewBox="0 0 700 470" width="100%"></svg></div>
+    <div>
+      <p>Human and mouse have about the same number of protein-coding genes as a 1 mm worm.</p>
+      <p class="fragment">Bread wheat has <b>5×</b> our genome and <b>5×</b> our genes: it carries three ancestral genomes (hexaploid).</p>
+      <p class="fragment">Most of a large genome is <b>repeats and non-coding DNA</b>. This is the <b>C-value paradox</b>.</p>
+      <div class="callout q fragment">Maths consequence: genome length \(n\) is a poor predictor of gene count \(g\). We will need models, not proportions.</div>
+    </div>
+  </div>
+  <p class="tiny">Approximate values from published assemblies and C-value estimates. Bar = genome size (log scale); label = protein-coding genes.</p>
+  <aside class="notes">4 min. Ask: what could fill the extra 40 Gb in a lungfish? (repeats, transposons — preview of Unit 8, RepeatMasker).</aside>
+</section>
+
+<!-- 5 · Genome as a string -->
+<section>
+  <div class="kicker">Formal definition <span class="badge math">maths</span></div>
+  <h2>A genome is a string</h2>
+  <div class="cols">
+    <div>
+      <p>Alphabet \(\Sigma = \{\texttt{A},\texttt{C},\texttt{G},\texttt{T}\}\)</p>
+      <p>A sequence of length \(n\): \(s = s_1 s_2 \dots s_n,\; s_i \in \Sigma\)</p>
+      <p class="fragment">DNA is double-stranded. The partner strand is the <b>reverse complement</b>:
+      $$\overline{s} = c(s_n)\,c(s_{n-1})\cdots c(s_1)$$
+      with \(c: \texttt{A}\leftrightarrow\texttt{T},\ \texttt{C}\leftrightarrow\texttt{G}\).</p>
+    </div>
+    <div class="panel fragment">
+      <div class="seq" style="font-size:0.85em">
+        5′ <span id="rc-top"></span> 3′<br>
+        <span style="opacity:.4">&nbsp;&nbsp;&nbsp;||||||||||||||||</span><br>
+        3′ <span id="rc-bot"></span> 5′
+      </div>
+      <p class="small">Read the bottom strand 5′→3′ (right to left) to get \(\overline{s}\).</p>
+      <p class="small">Every algorithm we write must decide: <b>one strand or both?</b></p>
+    </div>
+  </div>
+  <div class="callout fragment small">Biology adds structure the string hides: chromosomes (several strings), circular genomes (bacteria, mitochondria: the string has no ends), and two copies of each chromosome in humans (diploid).</div>
+  <aside class="notes">4 min. Ask: is reverse complement an involution? (yes, applying it twice gives back s). How many distinct strings of length 10? 4^10 ≈ 1 million.</aside>
+</section>
+
+<!-- 6 · Sequence lab -->
+<section>
+  <div class="kicker">Try it <span class="badge">interactive</span></div>
+  <h2>Sequence lab</h2>
+  <div class="widget">
+    <textarea id="lab-in" spellcheck="false">ATGACCATGATTACGGATTCACTGGCCGTCGTTTTACAACGTCGTGACTGGGAAAACCCTGGCG</textarea>
+    <p>
+      <button data-gen="random">Random 200 bp</button>
+      <button data-gen="gc">GC-rich 200 bp</button>
+      <button data-gen="at">AT-rich 200 bp</button>
+      <button data-gen="repeat">Repeat (CA)<sub>n</sub></button>
+    </p>
+    <div class="panel"><div class="seq" id="lab-color" style="font-size:0.95em"></div>
+      <div class="seq tiny" style="margin-top:0.3em">rev-comp: <span id="lab-rc"></span></div></div>
+    <div class="stat-row">
+      <div class="stat"><b id="lab-n">0</b><span>length n</span></div>
+      <div class="stat"><b id="lab-gc">0</b><span>GC content</span></div>
+      <div class="stat"><b id="lab-at">0</b><span>A vs T count</span></div>
+      <div class="stat"><b id="lab-h">0</b><span>entropy (bits/base)</span></div>
+      <div class="stat"><b id="lab-cpg">0</b><span>CpG obs / exp</span></div>
+    </div>
+  </div>
+  <aside class="notes">5 min. Paste anything (letters other than ACGT are dropped). Compare the four generators: entropy close to 2 for random, low for the repeat. CpG obs/exp ≈ 1 for random sequence; in the human genome it is about 0.2–0.25 (methylated C mutates to T). Come back to this in the notebook.</aside>
+</section>
+
+<!-- 7 · Information -->
+<section>
+  <div class="kicker">How much information? <span class="badge math">maths</span></div>
+  <h2>Bits in a genome</h2>
+  <div class="cols">
+    <div>
+      <p>4 symbols → \(\log_2 4 = 2\) bits per base, if all are equally likely.</p>
+      <p class="fragment">Human: \(3.1\times10^9 \times 2\ \text{bits} \approx 775\ \text{MB}\).<br>The usual FASTA text file is ~3 GB. <b>Why 4× bigger?</b></p>
+      <p class="fragment">If bases are not equally likely, use Shannon entropy:
+      $$H = -\sum_{x\in\Sigma} p_x \log_2 p_x \;\le\; 2$$</p>
+    </div>
+    <div>
+      <div class="panel fragment">
+        <h3>Think, then discuss (1 min)</h3>
+        <p class="small">Two people differ at roughly 1 base in 1,000. How would you store <i>your</i> genome if everyone already has the reference human genome?</p>
+      </div>
+      <div class="callout q fragment small">Answer: store only the differences (variants). This is exactly what a VCF file does (Unit 2). Compression = knowing what to expect.</div>
+    </div>
+  </div>
+  <aside class="notes">4 min. FASTA uses 1 byte (8 bits) per character plus line breaks → 4× the 2-bit minimum. Differences: ~0.1% of 3.1 Gb ≈ 3–4 million variants.</aside>
+</section>
+
+<!-- 8 · Chargaff -->
+<section>
+  <div class="kicker">A rule and a mystery <span class="badge math">maths</span> <span class="badge bio">biology</span></div>
+  <h2>Chargaff's rules</h2>
+  <div class="cols">
+    <div class="panel">
+      <h3>First rule (explained)</h3>
+      <p>In double-stranded DNA: \(\#A = \#T\) and \(\#G = \#C\).</p>
+      <p class="small">Every A pairs with a T. So one number, the GC content \(g\), fixes the whole composition:
+      $$p_A = p_T = \tfrac{1-g}{2},\quad p_G = p_C = \tfrac{g}{2}$$</p>
+    </div>
+    <div class="panel fragment">
+      <h3>Second rule (still debated)</h3>
+      <p>Even within <b>one strand</b>, \(\#A \approx \#T\) and \(\#G \approx \#C\) for long sequences, in almost every genome checked.</p>
+      <p class="small">Nothing in base pairing forces this. Proposed explanations involve inversions and transposons, but there is no agreed proof. <b>A genuine open question for mathematicians.</b></p>
+    </div>
+  </div>
+  <p class="small fragment">Check it in the sequence lab: a random string satisfies it by construction. A real bacterial chromosome does too, which is the surprise.</p>
+  <aside class="notes">3 min. GC content varies a lot between species: ~25% to ~75% in bacteria. It is a species signature, used later in metagenomic binning (Unit 12).</aside>
+</section>
+
+<!-- 9 · k-mer uniqueness -->
+<section>
+  <div class="kicker">How long until a word is unique? <span class="badge">interactive</span> <span class="badge math">maths</span></div>
+  <h2>Expected k-mer counts</h2>
+  <div class="cols w60">
+    <div class="widget">
+      <p>A <b>k-mer</b> is a substring of length \(k\). In a random genome of length \(n\), a given k-mer is expected
+      $$E[\text{count}] \approx \frac{n}{4^{k}}$$ times (one strand).</p>
+      <p>Genome:
+        <button data-n="5386" >phiX virus</button>
+        <button data-n="4641652" class="chosen">E. coli</button>
+        <button data-n="3100000000">Human</button>
+        <button data-n="16000000000">Wheat</button></p>
+      <p>k = <b id="km-k">10</b></p>
+      <input type="range" id="km-slider" min="1" max="30" value="10">
+      <div class="stat-row">
+        <div class="stat"><b id="km-exp"></b><span>expected count</span></div>
+        <div class="stat"><b id="km-space"></b><span>possible k-mers (4<sup>k</sup>)</span></div>
+        <div class="stat"><b id="km-kstar"></b><span>smallest k with E &lt; 1</span></div>
+      </div>
+      <div class="feedback" id="km-msg"></div>
+      <div class="panel" id="km-q" style="margin-top:0.3em"></div>
+    </div>
+    <div>
+      <svg id="km-chart" viewBox="0 0 420 320" width="100%"></svg>
+      <div class="callout q small fragment">Why do you care? Primers (~20 bases), sequencing reads, and k-mer based assemblers (Unit 5) all rely on words being unique. But real genomes are <b>not random</b>: repeats break this calculation.</div>
+    </div>
+  </div>
+  <aside class="notes">6 min. Ask the class to predict k* for human before moving the slider. Solve 4^k > 3.1×10^9 → k ≥ 16 (17 if we count both strands). This is why PCR primers are ~18–25 nt.</aside>
+</section>
+
+<!-- 10 · ORFs -->
+<section>
+  <div class="kicker">Finding genes as signal in noise <span class="badge">interactive</span> <span class="badge math">maths</span></div>
+  <h2>How long is a stretch without a stop codon?</h2>
+  <div class="cols">
+    <div>
+      <p class="small">Genes are read in codons (3 bases). 3 of the 64 codons are <b>stop</b> (TAA, TAG, TGA). In random DNA each codon is a stop with probability \(p = 3/64\).</p>
+      <p class="small">Codons before the first stop, \(L\), is <b>geometric</b>:
+      $$P(L=k) = (1-p)^k\,p,\qquad E[L] = \tfrac{1-p}{p} \approx 20.3$$</p>
+      <div class="widget">
+        <button id="orf-run" class="primary">Simulate 30 kb of random DNA</button>
+        <div class="stat-row">
+          <div class="stat"><b id="orf-mean">–</b><span>mean run (codons)</span></div>
+          <div class="stat"><b id="orf-max">–</b><span>longest run</span></div>
+          <div class="stat"><b id="orf-nrun">–</b><span>runs counted</span></div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <svg id="orf-chart" viewBox="0 0 460 300" width="100%"></svg>
+      <div class="widget panel" style="margin-top:0.3em">
+        A typical bacterial gene is ~<b id="orf-L">300</b> codons.
+        <input type="range" id="orf-slider" min="50" max="600" step="10" value="300">
+        Chance of that by luck: \((61/64)^L\) = <b id="orf-p"></b>
+      </div>
+    </div>
+  </div>
+  <p class="small fragment"><b>Idea:</b> a long open reading frame is very unlikely by chance, so it is evidence of a gene. This is the seed of every gene finder (Units 8 and 11).</p>
+  <aside class="notes">7 min. Run the simulation a few times: the histogram matches the geometric curve. Then slide L: 300 codons gives ~6×10⁻⁷. Ask: in a 4.6 Mb genome with 6 reading frames, how many such ORFs do you expect by chance? (~6 × 1.5M codons × p(…) — a handful, so you still need more evidence.)</aside>
+</section>
+
+<!-- 11 · Exit quiz -->
+<section>
+  <div class="kicker">Exit quiz <span class="badge game">game</span></div>
+  <h2>Four questions, one minute each</h2>
+  <div class="cols">
+    <div class="panel" id="q1"></div>
+    <div class="panel" id="q2"></div>
+    <div class="panel" id="q3"></div>
+    <div class="panel" id="q4"></div>
+  </div>
+  <aside class="notes">4 min. Students answer on paper or by hands first; then click to reveal.</aside>
+</section>
+
+<!-- 12 · Wrap-up -->
+<section>
+  <div class="kicker">Wrap-up</div>
+  <h2>Today in one slide</h2>
+  <ul>
+    <li>A genome is a string over {A,C,G,T}, but with two strands, several chromosomes and sometimes no ends.</li>
+    <li>Genome size ≠ gene count (C-value paradox).</li>
+    <li>About 2 bits per base; storing differences is far cheaper.</li>
+    <li>In a random genome of length \(n\), words of length \(k \gtrsim \log_4 n\) are unique.</li>
+    <li>Long open reading frames are improbable by chance: a statistical signal of genes.</li>
+  </ul>
+  <div class="cols" style="margin-top:0.6em">
+    <div class="panel small"><b>Notebook (Colab, Python):</b> <a href="https://colab.research.google.com/github/mbsai/UACB604-Computational-Genomics/blob/main/unit01/notebooks/1.1_genome_as_string.ipynb" target="_blank">1.1_genome_as_string.ipynb</a><br>GC content, Chargaff's second rule, CpG depletion and ORFs on the real <i>E. coli</i> genome.</div>
+    <div class="panel small"><b>Reading:</b> Brown, <i>Genomes 5</i>, ch. 1 · Pevsner, ch. 15<br><b>Next: Lecture 1.2</b>, the omics family, as data types.</div>
+  </div>
+</section>
+
+</div></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.1.0/reveal.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.1.0/plugin/math/math.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.1.0/plugin/notes/notes.min.js"></script>
+<script src="../assets/js/live.js"></script>
+<script src="../assets/js/course.js"></script>
+<script>
+CG.initDeck();
+
+// Title strip
+document.getElementById('title-dna').innerHTML = CG.colorSeq(CG.randomSeq(70));
+
+// ---------- Genome-size data (approximate) ----------
+var G = {
+  'E. coli':            { bp: 4.6e6,  genes: 4300,   note: 'bacterium' },
+  'Baker’s yeast': { bp: 12e6,   genes: 6000,   note: 'fungus' },
+  'C. elegans':         { bp: 100e6,  genes: 20000,  note: '1 mm worm' },
+  'Arabidopsis':        { bp: 135e6,  genes: 27000,  note: 'small weed' },
+  'Fruit fly':          { bp: 143e6,  genes: 14000,  note: 'insect' },
+  'Pufferfish (Fugu)':  { bp: 390e6,  genes: 21000,  note: 'fish' },
+  'Mouse':              { bp: 2.7e9,  genes: 20000,  note: 'mammal' },
+  'Human':              { bp: 3.1e9,  genes: 20000,  note: 'mammal' },
+  'Onion':              { bp: 16e9,   genes: null,   note: 'plant' },
+  'Bread wheat':        { bp: 16e9,   genes: 107000, note: 'hexaploid plant' },
+  'Australian lungfish':{ bp: 43e9,   genes: 31000,  note: 'fish' },
+  'Paris japonica':     { bp: 149e9,  genes: null,   note: 'flower, record holder' }
+};
+
+// ---------- Higher / lower game ----------
+(function () {
+  var pairs = [['Human','Onion'],['E. coli','Baker’s yeast'],['Human','Mouse'],['Fruit fly','Pufferfish (Fugu)'],
+               ['C. elegans','Arabidopsis'],['Human','Bread wheat'],['Human','Australian lungfish'],['Australian lungfish','Paris japonica']];
+  var i = 0, score = 0, total = 0, answered = false;
+  var $ = function (id) { return document.getElementById(id); };
+  $('hl-rounds').textContent = pairs.length;
+  function show() {
+    var a = pairs[i][0], b = pairs[i][1];
+    $('hl-a-name').textContent = a; $('hl-a-size').textContent = CG.fmtNum(G[a].bp);
+    $('hl-b-name').textContent = b; $('hl-b-size').textContent = '?'; $('hl-b-size').style.color = 'var(--muted)';
+    $('hl-fb').textContent = ''; $('hl-fb').className = 'feedback'; $('hl-round').textContent = i + 1;
+    answered = false;
+  }
+  function guess(higher) {
+    if (answered) return; answered = true; total++;
+    var a = G[pairs[i][0]].bp, b = G[pairs[i][1]].bp, ok = (b > a) === higher;
+    if (ok) score++;
+    CG.report($('hl-game'), 'hl-' + i, 'Higher/lower: ' + pairs[i][0] + ' vs ' + pairs[i][1], ok, higher ? 'higher' : 'lower');
+    $('hl-b-size').textContent = CG.fmtNum(b); $('hl-b-size').style.color = ok ? 'var(--good)' : 'var(--bad)';
+    var ratio = b > a ? b / a : a / b;
+    $('hl-fb').className = 'feedback ' + (ok ? 'ok' : 'no');
+    $('hl-fb').textContent = (ok ? '✓ ' : '✗ ') + pairs[i][1] + ' is ' + ratio.toFixed(1) + '× ' + (b > a ? 'larger' : 'smaller') + ' (' + G[pairs[i][1]].note + ').';
+    $('hl-score').textContent = score; $('hl-total').textContent = total;
+  }
+  $('hl-higher').onclick = function () { guess(true); };
+  $('hl-lower').onclick = function () { guess(false); };
+  $('hl-next').onclick = function () { if (i < pairs.length - 1) { i++; show(); } else { $('hl-fb').className='feedback ok'; $('hl-fb').textContent = 'Game over! Class score ' + score + '/' + total + '. Next slide: what does it mean?'; } };
+  show();
+})();
+
+// ---------- C-value chart (log bars) ----------
+(function () {
+  var svg = document.getElementById('cval-chart');
+  var names = Object.keys(G).sort(function (a, b) { return G[a].bp - G[b].bp; });
+  var x0 = 170, x1 = 640, lo = 6, hi = 11.3, rowH = 34, top = 20;
+  function X(bp) { return x0 + (Math.log10(bp) - lo) / (hi - lo) * (x1 - x0); }
+  [6,7,8,9,10,11].forEach(function (e) {
+    var x = X(Math.pow(10, e));
+    CG.svgEl('line', { x1: x, x2: x, y1: top - 5, y2: top + rowH * names.length, stroke: '#dde2ea' }, svg);
+    CG.svgText(svg, x, top + rowH * names.length + 18, ['1 Mb','10 Mb','100 Mb','1 Gb','10 Gb','100 Gb'][e - 6], { 'text-anchor': 'middle', 'font-size': 13, fill: '#5b6475' });
+  });
+  names.forEach(function (n, k) {
+    var y = top + k * rowH, isHuman = n === 'Human';
+    CG.svgText(svg, x0 - 8, y + 20, n, { 'text-anchor': 'end', 'font-size': 15, 'font-weight': isHuman ? 800 : 400 });
+    CG.svgEl('rect', { x: x0, y: y + 6, width: X(G[n].bp) - x0, height: rowH - 12, rx: 4, fill: isHuman ? '#6b4fd8' : '#b9acef' }, svg);
+    CG.svgText(svg, X(G[n].bp) + 6, y + 20, G[n].genes ? '~' + G[n].genes.toLocaleString() + ' genes' : '', { 'font-size': 12, fill: '#5b6475' });
+  });
+})();
+
+// ---------- Reverse-complement demo ----------
+(function () {
+  var s = 'ATGACCATGATTACGG';
+  document.getElementById('rc-top').innerHTML = CG.colorSeq(s);
+  var comp = s.split('').map(function (c) { return {A:'T',T:'A',G:'C',C:'G'}[c]; }).join('');
+  document.getElementById('rc-bot').innerHTML = CG.colorSeq(comp);
+})();
+
+// ---------- Sequence lab ----------
+(function () {
+  var inp = document.getElementById('lab-in');
+  function update() {
+    var s = CG.clean(inp.value), n = s.length, c = CG.counts(s);
+    document.getElementById('lab-color').innerHTML = n ? CG.colorSeq(s, 240) : '<span class="muted">type or paste DNA…</span>';
+    document.getElementById('lab-rc').innerHTML = CG.colorSeq(CG.revcomp(s), 120);
+    document.getElementById('lab-n').textContent = n;
+    var acgt = c.A + c.C + c.G + c.T;
+    document.getElementById('lab-gc').textContent = acgt ? ((c.G + c.C) / acgt * 100).toFixed(1) + '%' : '–';
+    document.getElementById('lab-at').textContent = c.A + ' / ' + c.T;
+    var H = 0; ['A','C','G','T'].forEach(function (x) { var p = acgt ? c[x] / acgt : 0; if (p > 0) H -= p * Math.log2(p); });
+    document.getElementById('lab-h').textContent = H.toFixed(2);
+    var cg = 0; for (var i = 0; i + 1 < n; i++) if (s[i] === 'C' && s[i + 1] === 'G') cg++;
+    var exp = acgt > 1 ? (c.C * c.G) / acgt : 0;
+    document.getElementById('lab-cpg').textContent = exp > 0 ? (cg / exp).toFixed(2) : '–';
+  }
+  inp.addEventListener('input', update);
+  document.querySelectorAll('[data-gen]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var t = b.getAttribute('data-gen');
+      inp.value = t === 'random' ? CG.randomSeq(200) : t === 'gc' ? CG.randomSeq(200, 0.7)
+                : t === 'at' ? CG.randomSeq(200, 0.3) : 'CA'.repeat(60);
+      update();
+    });
+  });
+  update();
+})();
+
+// ---------- k-mer slider ----------
+(function () {
+  var n = 4641652, slider = document.getElementById('km-slider');
+  var svg = document.getElementById('km-chart');
+  function kstar(n) { var k = 1; while (n / Math.pow(4, k) >= 1) k++; return k; }
+  function draw() {
+    var k = +slider.value, e = n / Math.pow(4, k);
+    document.getElementById('km-k').textContent = k;
+    document.getElementById('km-exp').textContent = CG.fmtNum(e);
+    document.getElementById('km-space').textContent = CG.fmtNum(Math.pow(4, k));
+    document.getElementById('km-kstar').textContent = kstar(n);
+    var msg = document.getElementById('km-msg');
+    msg.className = 'feedback ' + (e < 1 ? 'ok' : 'no');
+    msg.textContent = e < 1 ? 'A random ' + k + '-mer is probably unique (or absent) here.' : 'A random ' + k + '-mer appears many times: not unique.';
+    // chart: log10 E vs k
+    while (svg.firstChild) svg.removeChild(svg.firstChild);
+    var x0 = 50, x1 = 400, y0 = 270, y1 = 20, lo = -13, hi = 11;
+    function X(k) { return x0 + (k - 1) / 29 * (x1 - x0); }
+    function Y(v) { return y0 - (Math.max(lo, Math.min(hi, v)) - lo) / (hi - lo) * (y0 - y1); }
+    CG.svgEl('line', { x1: x0, x2: x1, y1: Y(0), y2: Y(0), stroke: '#d64545', 'stroke-dasharray': '5 4' }, svg);
+    CG.svgText(svg, x1, Y(0) - 6, 'E = 1', { 'text-anchor': 'end', fill: '#d64545', 'font-size': 13 });
+    [-12,-8,-4,0,4,8].forEach(function (v) { CG.svgText(svg, x0 - 6, Y(v) + 4, '10^' + v, { 'text-anchor': 'end', 'font-size': 11, fill: '#5b6475' }); });
+    [1,5,10,15,20,25,30].forEach(function (kk) { CG.svgText(svg, X(kk), y0 + 18, kk, { 'text-anchor': 'middle', 'font-size': 12, fill: '#5b6475' }); });
+    CG.svgText(svg, (x0 + x1) / 2, y0 + 36, 'k', { 'text-anchor': 'middle', 'font-size': 14 });
+    var d = ''; for (var kk = 1; kk <= 30; kk++) d += (kk === 1 ? 'M' : 'L') + X(kk) + ' ' + Y(Math.log10(n / Math.pow(4, kk)));
+    CG.svgEl('path', { d: d, fill: 'none', stroke: '#6b4fd8', 'stroke-width': 3 }, svg);
+    CG.svgEl('circle', { cx: X(k), cy: Y(Math.log10(e)), r: 7, fill: '#6b4fd8' }, svg);
+  }
+  slider.addEventListener('input', draw);
+  document.querySelectorAll('[data-n]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      document.querySelectorAll('[data-n]').forEach(function (x) { x.classList.remove('chosen'); });
+      b.classList.add('chosen'); n = +b.getAttribute('data-n'); draw();
+    });
+  });
+  draw();
+})();
+
+// ---------- ORF simulator ----------
+(function () {
+  var svg = document.getElementById('orf-chart'), p = 3 / 64;
+  var STOP = { TAA: 1, TAG: 1, TGA: 1 };
+  function simulate() {
+    var s = CG.randomSeq(30000), runs = [];
+    for (var f = 0; f < 3; f++) {
+      var run = 0;
+      for (var i = f; i + 3 <= s.length; i += 3) {
+        if (STOP[s.substr(i, 3)]) { runs.push(run); run = 0; } else run++;
+      }
+    }
+    return runs;
+  }
+  function draw(runs) {
+    while (svg.firstChild) svg.removeChild(svg.firstChild);
+    var bin = 5, nb = 20, h = new Array(nb).fill(0);
+    runs.forEach(function (r) { var b = Math.min(nb - 1, Math.floor(r / bin)); h[b]++; });
+    var exp = []; for (var b = 0; b < nb; b++) {
+      var pr = b === nb - 1 ? Math.pow(1 - p, b * bin) : Math.pow(1 - p, b * bin) - Math.pow(1 - p, (b + 1) * bin);
+      exp.push(pr * runs.length);
+    }
+    var x0 = 40, x1 = 450, y0 = 250, y1 = 15, max = Math.max.apply(null, h.concat(exp)) || 1, bw = (x1 - x0) / nb;
+    h.forEach(function (v, b) {
+      CG.svgEl('rect', { x: x0 + b * bw + 1, y: y0 - v / max * (y0 - y1), width: bw - 2, height: v / max * (y0 - y1), fill: '#b9acef' }, svg);
+    });
+    var d = ''; exp.forEach(function (v, b) { d += (b ? 'L' : 'M') + (x0 + (b + 0.5) * bw) + ' ' + (y0 - v / max * (y0 - y1)); });
+    CG.svgEl('path', { d: d, fill: 'none', stroke: '#d64545', 'stroke-width': 3 }, svg);
+    CG.svgEl('line', { x1: x0, x2: x1, y1: y0, y2: y0, stroke: '#5b6475' }, svg);
+    [0, 25, 50, 75].forEach(function (v) { CG.svgText(svg, x0 + v / bin * bw, y0 + 16, v, { 'text-anchor': 'middle', 'font-size': 12, fill: '#5b6475' }); });
+    CG.svgText(svg, x1, y0 + 16, '100+', { 'text-anchor': 'end', 'font-size': 12, fill: '#5b6475' });
+    CG.svgText(svg, (x0 + x1) / 2, y0 + 36, 'codons until a stop', { 'text-anchor': 'middle', 'font-size': 13 });
+    CG.svgText(svg, x1, y1 + 10, '■ simulated', { 'text-anchor': 'end', fill: '#8b7ad6', 'font-size': 13 });
+    CG.svgText(svg, x1, y1 + 28, '— geometric model', { 'text-anchor': 'end', fill: '#d64545', 'font-size': 13 });
+    if (runs.length) {
+      var m = runs.reduce(function (a, b) { return a + b; }, 0) / runs.length;
+      document.getElementById('orf-mean').textContent = m.toFixed(1);
+      document.getElementById('orf-max').textContent = Math.max.apply(null, runs);
+      document.getElementById('orf-nrun').textContent = runs.length;
+    }
+  }
+  function prob() {
+    var L = +document.getElementById('orf-slider').value;
+    document.getElementById('orf-L').textContent = L;
+    document.getElementById('orf-p').textContent = Math.pow(61 / 64, L).toExponential(1);
+  }
+  document.getElementById('orf-run').onclick = function () { draw(simulate()); };
+  document.getElementById('orf-slider').addEventListener('input', prob);
+  draw([]); prob();
+})();
+
+// ---------- k-mer prediction ----------
+CG.mcq(document.getElementById('km-q'), { id: 'kmer-predict',
+  q: 'Predict before sliding: smallest k with E &lt; 1 in the <b>human</b> genome?',
+  options: ['10', '13', '16', '20'], answer: 2, explain: '4<sup>16</sup> ≈ 4.3×10<sup>9</sup> &gt; 3.1×10<sup>9</sup>.' });
+
+// ---------- Exit quiz ----------
+CG.mcq(document.getElementById('q1'), { id: 'quiz1', q: '1. Minimum bits to store one base (A, C, G or T equally likely)?',
+  options: ['1', '2', '4', '8'], answer: 1, explain: 'log<sub>2</sub> 4 = 2.' });
+CG.mcq(document.getElementById('q2'), { id: 'quiz2', q: '2. Expected copies of one particular 10-mer in a random 1 Mb sequence?',
+  options: ['≈ 0.001', '≈ 1', '≈ 100', '≈ 10,000'], answer: 1, explain: '10<sup>6</sup> / 4<sup>10</sup> ≈ 10<sup>6</sup> / 1.05×10<sup>6</sup> ≈ 1.' });
+CG.mcq(document.getElementById('q3'), { id: 'quiz3', q: '3. A double-stranded genome has 60% GC. What fraction is A?',
+  options: ['10%', '20%', '30%', '40%'], answer: 1, explain: 'A + T = 40% and A = T, so A = 20%.' });
+CG.mcq(document.getElementById('q4'), { id: 'quiz4', q: '4. In random DNA, the mean number of codons before a stop is about…',
+  options: ['3', '20', '64', '300'], answer: 1, explain: 'Geometric with p = 3/64: (1−p)/p ≈ 20.' });
+</script>
+</body>
+</html>

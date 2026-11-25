@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Join Class</title>
+<link rel="stylesheet" href="classroom.css">
+</head>
+<body>
+<main class="card">
+  <div class="course">UACB-604 · Computational Genomics</div>
+  <h1>Join the class</h1>
+  <form id="f">
+    <label for="name">Your full name</label>
+    <input id="name" autocomplete="name" placeholder="e.g. Asha Kumar" maxlength="40" required>
+    <button type="submit">Join</button>
+    <p class="err" id="err"></p>
+  </form>
+  <div id="wait" hidden>
+    <p class="big">✓ You're in, <b id="me"></b>.</p>
+    <p class="muted">Waiting for your teacher to start the lecture… Your screen will follow the slides automatically.</p>
+    <p class="muted small">Not you? <a href="#" id="change">Change name</a></p>
+  </div>
+</main>
+<script>
+(function () {
+  var KEY = 'uacb604-student';
+  function load() { try { return JSON.parse(localStorage.getItem(KEY) || 'null'); } catch (e) { return null; } }
+  function store(v) { try { localStorage.setItem(KEY, JSON.stringify(v)); } catch (e) {} }
+  function forget() { try { localStorage.removeItem(KEY); } catch (e) {} }
+  var params = new URLSearchParams(location.search);
+  var f = document.getElementById('f'), err = document.getElementById('err');
+
+  function goWhenReady() {
+    f.hidden = true; document.getElementById('wait').hidden = false;
+    document.getElementById('me').textContent = load().name;
+    var es = new EventSource('/api/events');
+    es.onmessage = function (ev) {
+      var s = JSON.parse(ev.data);
+      if (s.deck) { es.close(); location.href = '/' + s.deck + '?role=student'; }
+    };
+  }
+
+  var me = load();
+  if (me && me.id && !params.has('change')) {
+    fetch('/api/whoami?id=' + encodeURIComponent(me.id)).then(function (r) { return r.json(); }).then(function (r) {
+      if (r.ok) goWhenReady(); else { document.getElementById('name').value = me.name || ''; }
+    });
+  } else if (me) {
+    document.getElementById('name').value = me.name || '';
+  }
+
+  f.addEventListener('submit', function (e) {
+    e.preventDefault(); err.textContent = '';
+    fetch('/api/join', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: document.getElementById('name').value }) })
+      .then(function (r) { return r.json(); })
+      .then(function (r) {
+        if (r.error) { err.textContent = r.error; return; }
+        store({ id: r.id, name: r.name }); goWhenReady();
+      })
+      .catch(function () { err.textContent = 'Cannot reach the class server. Check the address with your teacher.'; });
+  });
+  document.getElementById('change').addEventListener('click', function (e) {
+    e.preventDefault(); forget(); location.href = location.pathname + '?change=1';
+  });
+})();
+</script>
+</body>
+</html>

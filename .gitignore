@@ -1,0 +1,5 @@
+# macOS metadata (created on external drives)
+._*
+.DS_Store
+# Jupyter
+.ipynb_checkpoints/

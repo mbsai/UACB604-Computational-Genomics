@@ -1,0 +1,131 @@
+/* UACB-604 shared helpers: deck setup, DNA utilities, quiz builder, tiny SVG charts */
+(function (global) {
+  'use strict';
+
+  // ---------- Deck setup ----------
+  function initDeck(opts) {
+    opts = opts || {};
+    Reveal.initialize(Object.assign({
+      hash: true,
+      slideNumber: 'c/t',
+      width: 1280,
+      height: 760,
+      margin: 0.05,
+      center: false,
+      transition: 'fade',
+      plugins: [RevealMath.KaTeX, RevealNotes],
+    }, opts)).then(function () { if (global.Live) global.Live.init(); });
+    addTimer();
+    // Keep keyboard shortcuts from firing while students type in widgets
+    document.addEventListener('keydown', function (e) {
+      var t = e.target;
+      if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA')) e.stopPropagation();
+    }, true);
+  }
+
+  // Click the chip to start / pause a lecture clock; double-click to reset
+  function addTimer() {
+    var chip = document.createElement('div');
+    chip.id = 'timer-chip';
+    chip.title = 'Click: start/pause · Double-click: reset';
+    document.body.appendChild(chip);
+    var start = null, acc = 0, running = false;
+    function fmt(ms) { var s = Math.floor(ms / 1000); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); }
+    function draw() { chip.textContent = '⏱ ' + fmt(acc + (running ? Date.now() - start : 0)); }
+    chip.addEventListener('click', function () {
+      if (running) { acc += Date.now() - start; running = false; } else { start = Date.now(); running = true; }
+      draw();
+    });
+    chip.addEventListener('dblclick', function () { acc = 0; running = false; draw(); });
+    setInterval(function () { if (running) draw(); }, 1000);
+    draw();
+  }
+
+  // ---------- DNA utilities ----------
+  var COMP = { A: 'T', T: 'A', G: 'C', C: 'G', N: 'N' };
+  function clean(s) { return (s || '').toUpperCase().replace(/[^ACGTN]/g, ''); }
+  function revcomp(s) { return s.split('').reverse().map(function (c) { return COMP[c] || 'N'; }).join(''); }
+  function counts(s) {
+    var c = { A: 0, C: 0, G: 0, T: 0, N: 0 };
+    for (var i = 0; i < s.length; i++) if (c[s[i]] !== undefined) c[s[i]]++;
+    return c;
+  }
+  function randomSeq(n, gc) {
+    gc = gc === undefined ? 0.5 : gc;
+    var out = '';
+    for (var i = 0; i < n; i++) {
+      var r = Math.random();
+      out += r < gc ? (Math.random() < 0.5 ? 'G' : 'C') : (Math.random() < 0.5 ? 'A' : 'T');
+    }
+    return out;
+  }
+  function colorSeq(s, max) {
+    if (max && s.length > max) s = s.slice(0, max) + '…';
+    return s.split('').map(function (c) {
+      return 'ACGT'.indexOf(c) >= 0 ? '<span class="nt-' + c + '">' + c + '</span>' : c;
+    }).join('');
+  }
+  function fmtNum(x) {
+    if (!isFinite(x)) return '–';
+    var a = Math.abs(x);
+    if (a >= 1e9) return (x / 1e9).toFixed(a >= 1e10 ? 0 : 1) + ' G';
+    if (a >= 1e6) return (x / 1e6).toFixed(a >= 1e7 ? 0 : 1) + ' M';
+    if (a >= 1e4) return (x / 1e3).toFixed(0) + ' k';
+    if (a >= 100) return x.toFixed(0);
+    if (a >= 1) return x.toFixed(2);
+    if (a === 0) return '0';
+    return x.toExponential(1);
+  }
+
+  // ---------- Multiple-choice quiz ----------
+  // mcq(el, {id, q, options:[...], answer: index, explain: 'html'})
+  // In live class mode the first answer is final and is sent to the teacher.
+  function mcq(el, spec) {
+    var locked = false;
+    el.classList.add('widget');
+    var html = '<p style="margin:0.2em 0 0.4em"><b>' + spec.q + '</b></p><div class="opts"></div><div class="feedback"></div>';
+    el.innerHTML = html;
+    var opts = el.querySelector('.opts'), fb = el.querySelector('.feedback');
+    spec.options.forEach(function (o, i) {
+      var b = document.createElement('button');
+      b.innerHTML = o;
+      b.addEventListener('click', function () {
+        if (locked) return;
+        if (live()) { locked = true; report(el, spec.id || spec.q, stripTags(spec.q), i === spec.answer, stripTags(o)); }
+        opts.querySelectorAll('button').forEach(function (x, j) {
+          x.classList.remove('right', 'wrong');
+          if (j === spec.answer) x.classList.add('right');
+        });
+        if (i !== spec.answer) b.classList.add('wrong');
+        fb.className = 'feedback ' + (i === spec.answer ? 'ok' : 'no');
+        fb.innerHTML = (i === spec.answer ? '✓ Correct. ' : '✗ Not quite. ') + (spec.explain || '');
+      });
+      opts.appendChild(b);
+    });
+  }
+
+  // ---------- Live-class helpers ----------
+  function live() { return !!(global.Live && global.Live.isStudent); }
+  function report(el, qid, label, correct, answer) { if (global.Live) global.Live.report(el, qid, label, correct, answer); }
+  function stripTags(s) { var d = document.createElement('div'); d.innerHTML = s; return d.textContent; }
+
+  // ---------- Tiny SVG helpers ----------
+  var NS = 'http://www.w3.org/2000/svg';
+  function svgEl(tag, attrs, parent) {
+    var e = document.createElementNS(NS, tag);
+    for (var k in attrs) e.setAttribute(k, attrs[k]);
+    if (parent) parent.appendChild(e);
+    return e;
+  }
+  function svgText(parent, x, y, txt, attrs) {
+    var t = svgEl('text', Object.assign({ x: x, y: y, 'font-size': 14, fill: '#1d2433' }, attrs || {}), parent);
+    t.textContent = txt;
+    return t;
+  }
+
+  global.CG = {
+    initDeck: initDeck, clean: clean, revcomp: revcomp, counts: counts, randomSeq: randomSeq,
+    colorSeq: colorSeq, fmtNum: fmtNum, mcq: mcq, svgEl: svgEl, svgText: svgText,
+    live: live, report: report,
+  };
+})(window);
