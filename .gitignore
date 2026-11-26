@@ -3,3 +3,5 @@
 .DS_Store
 # Jupyter
 .ipynb_checkpoints/
+# raw full-page website captures (regenerate with assets/img/screens/capture.py)
+assets/img/screens/raw/

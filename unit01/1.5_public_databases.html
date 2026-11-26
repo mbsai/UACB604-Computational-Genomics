@@ -151,6 +151,14 @@
   <aside class="notes">4 min. Joining a 20,000-row table through a one-to-many mapping can silently produce 60,000 rows.</aside>
 </section>
 
+<!-- 7b · Website tour -->
+<section>
+  <div class="kicker">On the real websites <span class="badge bio">practice</span></div>
+  <h2>One gene, as the websites show it</h2>
+  <div id="tour-tp53"></div>
+  <aside class="notes">3 min. Real screenshots of the TP53 pages (taken 26 Nov 2026). Click a tab to switch site, click the picture to enlarge. Point out where each ID sits on the page: this is what students need for the treasure hunt next. Ensembl ③ vs ④: the gene span is wider than the MANE transcript, the disagreement from the previous slide, now visible on screen.</aside>
+</section>
+
 <!-- 8 · Treasure hunt -->
 <section data-results="board">
   <div class="kicker">Treasure hunt <span class="badge game">game</span></div>
@@ -256,6 +264,18 @@
 <script src="../assets/js/course.js"></script>
 <script>
 CG.initDeck();
+CG.siteTour(document.getElementById('tour-tp53'), [
+  { label: 'NCBI Gene', optional: true, img: '../assets/img/screens/ncbi_gene.jpg', url: 'https://www.ncbi.nlm.nih.gov/gene/7157', date: '26 Nov 2026',
+    legend: ['Gene ID <b>7157</b>: NCBI’s number for TP53', 'Location on <b>GRCh38</b>: chr17 7,668,421–7,687,490', 'Links out to Ensembl, UniProt, KEGG (the cross-references)'] },
+  { label: 'Ensembl', img: '../assets/img/screens/ensembl.jpg', url: 'https://www.ensembl.org/Homo_sapiens/Gene/Summary?g=ENSG00000141510', date: '26 Nov 2026',
+    legend: ['Species and <b>assembly</b>: GRCh38.p14. Coordinates mean nothing without it', 'Stable gene ID <span class="mono">ENSG00000141510</span>; <b>.21</b> is the version', 'Gene span <span class="mono">17:7,661,779–7,687,546</span> (all 40 transcripts)', 'MANE Select transcript: 393 aa, <span class="mono">7,668,421–7,687,490</span>, the same span as NCBI'],
+    note: 'Compare ③ and ④: the "databases disagree" slide, on the real page.' },
+  { label: 'UniProt', img: '../assets/img/screens/uniprot.jpg', url: 'https://www.uniprot.org/uniprotkb/P04637/entry', date: '26 Nov 2026',
+    legend: ['Accession <span class="mono">P04637</span> and entry name P53_HUMAN', '<b>Reviewed (Swiss-Prot)</b>: checked by a curator. Unreviewed entries are TrEMBL', 'Length <b>393</b> amino acids, the same protein as Ensembl ④'] },
+  { label: 'UCSC', optional: true, img: '../assets/img/screens/ucsc.jpg', url: 'https://genome.ucsc.edu/cgi-bin/hgTracks?db=hg38&position=chr17:7668421-7687490', date: '26 Nov 2026',
+    legend: ['Assembly chosen at the top (hg38 = GRCh38)', 'Position box: <span class="mono">chr17:7,668,421-7,687,490</span>', 'Tracks: genes, conservation, variants stacked along the same coordinates'] }
+]);
+
 var $ = function (id) { return document.getElementById(id); };
 $('title-dna').innerHTML = CG.colorSeq(CG.randomSeq(70));
 

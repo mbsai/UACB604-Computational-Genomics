@@ -168,6 +168,45 @@
     show();
   }
 
+  // ---------- Website tour: tabs of annotated screenshots ----------
+  // sites: [{label, img, url, date, legend: ['what ① shows', ...], note}]
+  // A tab whose image is missing is hidden, so a hand-taken screenshot can be
+  // dropped into assets/img/screens/ later and appears without editing the deck.
+  function siteTour(el, sites) {
+    el.classList.add('tour');
+    var tabs = document.createElement('div'); tabs.className = 'tour-tabs';
+    var body = document.createElement('div'); body.className = 'tour-body';
+    body.innerHTML = '<figure class="shot"><img alt=""><figcaption class="tiny"></figcaption></figure><div class="tour-legend small"></div>';
+    el.appendChild(tabs); el.appendChild(body);
+    var img = body.querySelector('img'), cap = body.querySelector('figcaption'), leg = body.querySelector('.tour-legend');
+    var btns = [];
+    function show(k) {
+      var s = sites[k];
+      btns.forEach(function (b, j) { b.classList.toggle('chosen', j === k); });
+      img.src = s.img; img.alt = 'Screenshot: ' + s.label;
+      var host = s.url.replace(/^https?:\/\//, '').split('/')[0];
+      cap.innerHTML = 'Screenshot of <a href="' + s.url + '" target="_blank" rel="noopener">' + host + '</a>' + (s.date ? ', ' + s.date : '') + ' · click to enlarge';
+      leg.innerHTML = (s.legend || []).map(function (t, i) {
+        return '<div class="tour-item"><span class="num">' + (i + 1) + '</span><span>' + t + '</span></div>';
+      }).join('') + (s.note ? '<div class="callout q">' + s.note + '</div>' : '');
+    }
+    sites.forEach(function (s, k) {
+      var b = document.createElement('button'); b.textContent = s.label; b.onclick = function () { show(k); };
+      tabs.appendChild(b); btns.push(b);
+      var probe = new Image();
+      probe.onerror = function () { b.style.display = 'none'; if (b.classList.contains('chosen')) { var f = btns.filter(function (x) { return x.style.display !== 'none'; })[0]; if (f) f.click(); } };
+      probe.src = s.img;
+    });
+    img.onclick = function () { zoom(img.src, img.alt); };
+    show(sites.findIndex ? Math.max(0, sites.findIndex(function (s) { return !s.optional; })) : 0);
+  }
+  function zoom(src, alt) {
+    var o = document.createElement('div'); o.className = 'shot-zoom';
+    o.innerHTML = '<img alt="' + (alt || '') + '" src="' + src + '"><span>click anywhere to close</span>';
+    o.onclick = function () { o.remove(); };
+    document.body.appendChild(o);
+  }
+
   // ---------- Live-class helpers ----------
   function live() { return !!(global.Live && global.Live.isStudent); }
   function report(el, qid, label, correct, answer) { if (global.Live) global.Live.report(el, qid, label, correct, answer); }
@@ -191,5 +230,6 @@
     initDeck: initDeck, clean: clean, revcomp: revcomp, counts: counts, randomSeq: randomSeq,
     colorSeq: colorSeq, fmtNum: fmtNum, mcq: mcq, svgEl: svgEl, svgText: svgText,
     live: live, report: report, matchGame: matchGame, cardGame: cardGame,
+    siteTour: siteTour, zoom: zoom,
   };
 })(window);

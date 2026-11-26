@@ -61,6 +61,14 @@
   <aside class="notes">4 min. This is the RNA-seq study whose reads they decoded in Lecture 2.2.</aside>
 </section>
 
+<!-- 3b · Clicking through the websites -->
+<section>
+  <div class="kicker">On the real websites <span class="badge bio">practice</span></div>
+  <h2>Study → runs → files, on screen</h2>
+  <div id="tour-sra"></div>
+  <aside class="notes">4 min. Real screenshots of PRJNA229998 (26 Nov 2026). Go through the tabs left to right: the project page, the list of runs, the download links. Ask: Run Selector says 32.72 Gb, ENA's gzipped FASTQ files add up to 50.4 GB. Why different? SRA stores reads in its own compressed format; ENA serves gzipped FASTQ text.</aside>
+</section>
+
 <!-- 4 · Ways to download -->
 <section>
   <div class="kicker">Tools <span class="badge bio">practice</span></div>
@@ -231,6 +239,16 @@
 <script src="../assets/js/md5.js"></script>
 <script>
 CG.initDeck();
+CG.siteTour(document.getElementById('tour-sra'), [
+  { label: '1 · NCBI BioProject', img: '../assets/img/screens/bioproject.jpg', url: 'https://www.ncbi.nlm.nih.gov/bioproject/PRJNA229998', date: '26 Nov 2026',
+    legend: ['The study’s accession <span class="mono">PRJNA229998</span>', 'Title and description: what the experiment was', '<b>16</b> SRA experiments: click to reach the reads'],
+    note: 'Lower on the page: <b>57 Gbases</b> of sequence in this project.' },
+  { label: '2 · SRA Run Selector', img: '../assets/img/screens/runselector.jpg', url: 'https://www.ncbi.nlm.nih.gov/Traces/study/?acc=PRJNA229998', date: '26 Nov 2026',
+    legend: ['Type a project (or run) accession and search', 'Totals: <b>16 runs</b>, 32.72 Gb in SRA’s own compressed format, 57.18 G bases', '<b>Metadata</b> = the table as a file; <b>Accession List</b> = run IDs for scripts', 'One row per run: <span class="mono">SRR1039508</span> → its BioSample and Experiment'] },
+  { label: '3 · ENA project page', img: '../assets/img/screens/ena_project.jpg', url: 'https://www.ebi.ac.uk/ena/browser/view/PRJNA229998', date: '26 Nov 2026',
+    legend: ['The run <span class="mono">SRR1039508</span>', 'Its two FASTQ files: <b>_1</b> and <b>_2</b> are the read pairs', '<b>Download report</b> (TSV/JSON): the same table as data, what the notebook’s API call returns', '<b>Get download script</b>: a ready-made list of <span class="mono">wget</span> commands'] }
+]);
+
 var $ = function (id) { return document.getElementById(id); };
 $('title-dna').innerHTML = CG.colorSeq(CG.randomSeq(70));
 

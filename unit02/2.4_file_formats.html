@@ -130,6 +130,14 @@ GATAAAGCAGGAATTACTACTGCTTGTTTACGAATTAAATCGAAGTGGACTGCTGGCGGAAAATGAGAAA
   <aside class="notes">4 min. INSDC: GenBank, ENA (EMBL format) and DDBJ hold the same records.</aside>
 </section>
 
+<!-- 5b · The record on the web -->
+<section>
+  <div class="kicker">On the real website <span class="badge bio">practice</span></div>
+  <h2>Where the files come from</h2>
+  <div id="tour-phix"></div>
+  <aside class="notes">2 min. The ENA page for J02482 (screenshot 26 Nov 2026). ④ is where the EMBL text on the previous slide came from: "View" opens it in the browser, "Download" saves the file. The page also shows an MD5 checksum, which comes back in Lecture 2.5.</aside>
+</section>
+
 <!-- 6 · FASTQ + ASCII -->
 <section>
   <div class="kicker">FASTQ <span class="badge math">maths</span></div>
@@ -270,6 +278,14 @@ GGGFGGGGGGGGGGGAFGGGGGGFDGGGGGGGGGGGDFFGGGG…</pre>
 <script src="../assets/js/course.js"></script>
 <script>
 CG.initDeck();
+CG.siteTour(document.getElementById('tour-phix'), [
+  { label: 'ENA (EMBL format)', img: '../assets/img/screens/ena_j02482.jpg', url: 'https://www.ebi.ac.uk/ena/browser/view/J02482', date: '26 Nov 2026',
+    legend: ['Accession.version <span class="mono">J02482.1</span>: the ID line of the EMBL file', 'Topology <b>circular</b>: why a gene can be <span class="mono">join(3981..5386,1..136)</span>', 'Base count <b>5386</b>, the length in the <span class="mono">ID</span> and <span class="mono">SQ</span> lines', 'The same record as <b>EMBL</b> or <b>FASTA</b>: view in the browser or download the file'],
+    note: 'Further down the page: an <b>MD5 checksum</b> of the sequence (Lecture 2.5).' },
+  { label: 'NCBI (GenBank format)', optional: true, img: '../assets/img/screens/nuccore.jpg', url: 'https://www.ncbi.nlm.nih.gov/nuccore/NC_001422.1', date: '26 Nov 2026',
+    legend: ['RefSeq accession <span class="mono">NC_001422.1</span>', 'The LOCUS line: 5386 bp, DNA, circular', '"Send to → File" saves GenBank, FASTA or XML'] }
+]);
+
 var $ = function (id) { return document.getElementById(id); };
 $('title-dna').innerHTML = CG.colorSeq(CG.randomSeq(70));
 
