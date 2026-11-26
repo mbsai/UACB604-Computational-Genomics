@@ -5,6 +5,7 @@
   // ---------- Deck setup ----------
   function initDeck(opts) {
     opts = opts || {};
+    frameSlides();
     Reveal.initialize(Object.assign({
       hash: true,
       slideNumber: 'c/t',
@@ -21,6 +22,41 @@
       var t = e.target;
       if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA')) e.stopPropagation();
     }, true);
+  }
+
+  // Even vertical spacing: every slide gets a fixed-height frame. The kicker and
+  // heading stay at the top; everything else goes into .slide-body, whose
+  // children share the remaining height equally (auto margins, so a slide that
+  // is too full simply starts at the top instead of overflowing upwards).
+  // Title slides are centred both ways.
+  function frameSlides() {
+    document.querySelectorAll('.reveal .slides section').forEach(function (sec) {
+      if (sec.querySelector('section') || sec.dataset.framed) return;
+      sec.dataset.framed = '1';
+      var isTitle = sec.classList.contains('title-slide');
+      sec.classList.remove('center');
+      var frame = document.createElement('div'); frame.className = 'slide-frame';
+      var body = document.createElement('div'); body.className = 'slide-body';
+      Array.prototype.slice.call(sec.childNodes).forEach(function (n) {
+        if (n.nodeType === 1 && n.matches('aside.notes')) return;          // speaker notes stay put
+        if (n.nodeType !== 1 && !/\S/.test(n.textContent)) { n.remove(); return; }  // whitespace between tags
+        if (!isTitle && n.nodeType === 1 && (n.matches('.kicker') || n.matches('h2')) && !body.childNodes.length) frame.appendChild(n);
+        else body.appendChild(n);
+      });
+      frame.appendChild(body);
+      sec.insertBefore(frame, sec.firstChild);
+      // Plain columns (not panels or widgets) whose children are all blocks: spread them evenly too
+      sec.querySelectorAll('.slide-body .cols > *').forEach(function (col) {
+        if (col.matches('.panel, .widget, svg, pre, table, img, figure') || !col.children.length) return;
+        var ok = Array.prototype.every.call(col.childNodes, function (n) {
+          if (n.nodeType === 3) return !/\S/.test(n.textContent);
+          if (n.nodeType !== 1) return true;
+          var d = getComputedStyle(n).display;
+          return /^(block|flex|grid|table|list-item)$/.test(d) || n.tagName === 'svg';
+        });
+        if (ok) col.classList.add('vfill');
+      });
+    });
   }
 
   // Click the chip to start / pause a lecture clock; double-click to reset

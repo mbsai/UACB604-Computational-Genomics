@@ -84,7 +84,15 @@ body, .reveal-viewport { background: var(--paper); }
 svg text { font-family: var(--r-main-font); }
 
 /* Title slide */
-.reveal .slides section.title-slide { padding-top: 200px; }
+.reveal .slides > section, .reveal .slides > section > section { height: 100%; box-sizing: border-box; }
+.slide-frame { display: flex; flex-direction: column; height: 100%; }
+.slide-body { flex: 1 1 auto; display: flex; flex-direction: column; min-height: 0; gap: 0.25em; }
+.slide-body > * { margin-top: auto !important; margin-bottom: 0 !important; flex: 0 0 auto; }
+.slide-body > :last-child { margin-bottom: auto !important; }
+.cols > .vfill { display: flex; flex-direction: column; justify-content: space-evenly; }
+.cols > .vfill > * { flex: 0 0 auto; }
+.title-slide .slide-body { align-items: center; justify-content: center; text-align: center; gap: 0.5em; }
+.title-slide .slide-body > *, .title-slide .slide-body > :last-child { margin: 0 !important; }
 .title-slide h1 { font-size: 2.2em; line-height: 1.05; margin-bottom: 0.2em; }
 .title-slide .course { font-weight: 600; color: var(--accent); letter-spacing: 0.08em; text-transform: uppercase; font-size: 0.6em; }
 .dna-strip { font-family: var(--r-code-font); font-size: 0.6em; letter-spacing: 0.25em; opacity: 0.85; margin: 0.6em 0; white-space: nowrap; overflow: hidden; }
