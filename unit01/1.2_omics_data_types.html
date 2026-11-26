@@ -16,6 +16,15 @@
   .tbl th { background: var(--panel); }
   .tbl td:first-child, .tbl th:first-child { text-align: left; }
   .pep-opts button { font-family: var(--r-code-font); }
+  /* omics overview cards */
+  .omics-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.45em 0.6em; align-items: stretch; }
+  .omics-card { display: grid; grid-template-columns: 8em 1fr; gap: 0.55em; align-items: start;
+    background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 0.45em 0.6em; font-size: 0.5em; line-height: 1.35; }
+  .omics-card svg { width: 100%; height: auto; }
+  .omics-card h4 { margin: 0 0 0.15em; font-size: 1.35em; font-weight: 800; color: var(--ink); text-transform: none; letter-spacing: -0.01em; }
+  .omics-card .q { font-style: italic; color: var(--accent); margin-bottom: 0.25em; }
+  .omics-card p { margin: 0.1em 0; }
+  .omics-card .eg { color: var(--muted); margin-top: 0.25em; }
 </style>
 </head>
 <body>
@@ -74,7 +83,115 @@
   <aside class="notes">6 min. Let teams of 4–5 discuss for one minute, then take answers from each team. The rest of the lecture walks through each match.</aside>
 </section>
 
-<!-- 4 · Genomics -->
+<!-- 4 · Omics at a glance -->
+<section>
+  <div class="kicker">The omics family at a glance <span class="badge bio">biology</span></div>
+  <h2>Six omics, one cell (and its neighbours)</h2>
+  <p class="small muted" style="margin:-0.3em 0 0.4em">Think of the genome as a cookbook.</p>
+  <div class="omics-grid">
+
+    <div class="omics-card fragment">
+      <svg viewBox="0 0 120 110" aria-hidden="true">
+        <path d="M30 5 C 90 30, 90 30, 30 55 S 90 80, 30 105" fill="none" stroke="#2f6fd6" stroke-width="5"/>
+        <path d="M90 5 C 30 30, 30 30, 90 55 S 30 80, 90 105" fill="none" stroke="#6b4fd8" stroke-width="5"/>
+        <g stroke-width="4"><line x1="42" y1="13" x2="78" y2="13" stroke="#2e9e5b"/><line x1="52" y1="25" x2="68" y2="25" stroke="#e0a100"/>
+        <line x1="52" y1="38" x2="68" y2="38" stroke="#d64545"/><line x1="42" y1="49" x2="78" y2="49" stroke="#2f6fd6"/>
+        <line x1="42" y1="62" x2="78" y2="62" stroke="#e0a100"/><line x1="52" y1="74" x2="68" y2="74" stroke="#2e9e5b"/>
+        <line x1="52" y1="86" x2="68" y2="86" stroke="#2f6fd6"/><line x1="42" y1="98" x2="78" y2="98" stroke="#d64545"/></g>
+      </svg>
+      <div><h4>Genomics</h4>
+        <div class="q">The whole cookbook: what is written?</div>
+        <p><b>Measures:</b> the complete DNA sequence and how individuals differ (variants).</p>
+        <p><b>How:</b> DNA sequencing (Illumina short reads, Nanopore/PacBio long reads).</p>
+        <p class="eg">e.g. finding the inherited <i>BRCA1</i> variant in a family with breast cancer.</p></div>
+    </div>
+
+    <div class="omics-card fragment">
+      <svg viewBox="0 0 120 110" aria-hidden="true">
+        <path d="M2 70 Q 15 70 20 60 A 16 16 0 1 1 40 60 Q 46 72 58 60 A 16 16 0 1 1 78 60 Q 84 72 96 60 A 16 16 0 1 1 116 60" fill="none" stroke="#2f6fd6" stroke-width="3.5"/>
+        <circle cx="30" cy="52" r="13" fill="#e3dcff"/><circle cx="68" cy="52" r="13" fill="#e3dcff"/><circle cx="106" cy="52" r="13" fill="#bdb0f0"/>
+        <g stroke="#d64545" stroke-width="2.5" fill="#d64545">
+          <line x1="22" y1="25" x2="22" y2="38"/><circle cx="22" cy="21" r="5"/>
+          <line x1="60" y1="25" x2="60" y2="38"/><circle cx="60" cy="21" r="5"/></g>
+        <text x="16" y="12" font-size="13" fill="#d64545" font-weight="700">Me</text><text x="54" y="12" font-size="13" fill="#d64545" font-weight="700">Me</text>
+        <text x="30" y="104" font-size="14" fill="#5b6475" text-anchor="middle">closed</text><text x="100" y="104" font-size="14" fill="#5b6475" text-anchor="middle">open</text>
+      </svg>
+      <div><h4>Epigenomics</h4>
+        <div class="q">Bookmarks and taped-shut pages: which recipes can be used?</div>
+        <p><b>Measures:</b> chemical marks on DNA and histones (e.g. methylation) and how open the chromatin is.</p>
+        <p><b>How:</b> bisulfite sequencing, ChIP-seq, ATAC-seq.</p>
+        <p class="eg">e.g. methylation “clocks” that estimate a person's age from blood DNA.</p></div>
+    </div>
+
+    <div class="omics-card fragment">
+      <svg viewBox="0 0 120 110" aria-hidden="true">
+        <rect x="5" y="12" width="110" height="10" rx="4" fill="#2f6fd6"/>
+        <rect x="18" y="12" width="22" height="10" fill="#6b4fd8"/><rect x="72" y="12" width="22" height="10" fill="#6b4fd8"/>
+        <g fill="none" stroke="#2e9e5b" stroke-width="3">
+          <path d="M14 40 q 6 -6 12 0 t 12 0 t 12 0"/><path d="M14 54 q 6 -6 12 0 t 12 0 t 12 0"/><path d="M14 68 q 6 -6 12 0 t 12 0 t 12 0"/>
+          <path d="M14 82 q 6 -6 12 0 t 12 0 t 12 0"/><path d="M68 40 q 6 -6 12 0 t 12 0 t 12 0"/></g>
+        <text x="32" y="106" font-size="15" fill="#1d2433" text-anchor="middle" font-weight="700">A ×4</text>
+        <text x="86" y="106" font-size="15" fill="#1d2433" text-anchor="middle" font-weight="700">B ×1</text>
+      </svg>
+      <div><h4>Transcriptomics</h4>
+        <div class="q">Today's photocopied recipes: which genes are read, and how often?</div>
+        <p><b>Measures:</b> all RNA molecules in a sample, counted gene by gene.</p>
+        <p><b>How:</b> RNA-seq (earlier: microarrays); single-cell RNA-seq.</p>
+        <p class="eg">e.g. PAM50: 50 genes' expression sorts breast cancers into subtypes.</p></div>
+    </div>
+
+    <div class="omics-card fragment">
+      <svg viewBox="0 0 120 110" aria-hidden="true">
+        <path d="M10 45 C 5 15, 35 5, 45 25 S 70 10, 62 35 S 30 55, 50 62 S 15 75, 10 45" fill="#fff4d6" stroke="#e0a100" stroke-width="3"/>
+        <g fill="#e0a100"><circle cx="20" cy="30" r="3"/><circle cx="44" cy="40" r="3"/><circle cx="30" cy="55" r="3"/></g>
+        <line x1="70" y1="100" x2="118" y2="100" stroke="#5b6475" stroke-width="2"/>
+        <g stroke="#6b4fd8" stroke-width="4"><line x1="76" y1="100" x2="76" y2="80"/><line x1="86" y1="100" x2="86" y2="45"/>
+        <line x1="96" y1="100" x2="96" y2="70"/><line x1="106" y1="100" x2="106" y2="88"/><line x1="113" y1="100" x2="113" y2="60"/></g>
+        <text x="94" y="38" font-size="13" fill="#5b6475" text-anchor="middle">m/z</text>
+      </svg>
+      <div><h4>Proteomics</h4>
+        <div class="q">The dishes actually cooked: which proteins exist, how much, how modified?</div>
+        <p><b>Measures:</b> proteins, their amounts and modifications (e.g. phosphorylation).</p>
+        <p><b>How:</b> mass spectrometry of digested peptides.</p>
+        <p class="eg">e.g. seeing which signalling proteins are switched on by phosphorylation in a tumour.</p></div>
+    </div>
+
+    <div class="omics-card fragment">
+      <svg viewBox="0 0 120 110" aria-hidden="true">
+        <g fill="none" stroke="#2e9e5b" stroke-width="3">
+          <polygon points="30,20 44,28 44,44 30,52 16,44 16,28"/><polygon points="44,44 58,36 72,44 72,60 58,68 44,60"/>
+          <polygon points="88,62 100,69 100,83 88,90 76,83 76,69"/></g>
+        <g fill="#2e9e5b"><circle cx="85" cy="25" r="5"/><circle cx="100" cy="35" r="4"/><circle cx="20" cy="80" r="5"/><circle cx="40" cy="92" r="4"/><circle cx="58" cy="85" r="3"/></g>
+        <line x1="72" y1="60" x2="80" y2="70" stroke="#2e9e5b" stroke-width="3"/>
+      </svg>
+      <div><h4>Metabolomics</h4>
+        <div class="q">Ingredients and leftovers in the kitchen: what is the chemistry doing?</div>
+        <p><b>Measures:</b> small molecules: sugars, amino acids, lipids, drugs.</p>
+        <p><b>How:</b> mass spectrometry, NMR.</p>
+        <p class="eg">e.g. newborn screening for phenylketonuria (PKU) by measuring phenylalanine.</p></div>
+    </div>
+
+    <div class="omics-card fragment">
+      <svg viewBox="0 0 120 110" aria-hidden="true">
+        <ellipse cx="60" cy="60" rx="55" ry="45" fill="#f4f6fa" stroke="#9aa3b2" stroke-width="2.5"/>
+        <rect x="22" y="35" width="28" height="12" rx="6" fill="#6b4fd8"/><rect x="66" y="78" width="26" height="11" rx="5.5" fill="#6b4fd8" transform="rotate(-20 79 83)"/>
+        <g fill="#2e9e5b"><circle cx="78" cy="38" r="7"/><circle cx="90" cy="45" r="7"/><circle cx="84" cy="55" r="7"/></g>
+        <path d="M24 75 q 5 -8 10 0 t 10 0 t 10 0" fill="none" stroke="#d64545" stroke-width="3.5"/>
+        <circle cx="55" cy="25" r="5" fill="#e0a100"/>
+      </svg>
+      <div><h4>Metagenomics</h4>
+        <div class="q">Every cookbook in every kitchen on the street: who is there, what can they do?</div>
+        <p><b>Measures:</b> DNA from all organisms in a sample at once (gut, soil, ocean, wastewater).</p>
+        <p><b>How:</b> shotgun sequencing, or 16S rRNA amplicons for bacteria.</p>
+        <p class="eg">e.g. how the gut microbiome changes in disease or with antibiotics.</p></div>
+    </div>
+
+  </div>
+  <p class="tiny" style="margin-top:0.4em">Also: lipidomics, glycomics, phenomics… The rest of today: what each one's <b>data</b> look like, and the maths that goes with it.</p>
+  <aside class="notes">5 min. Press → to reveal one card at a time and tell the cookbook story. Metabolomics is not in the syllabus list but completes the picture. Then: "Now let's see what each of these looks like to a mathematician."</aside>
+</section>
+
+<!-- 5 · Genomics -->
 <section>
   <div class="kicker">Genomics <span class="badge math">maths</span></div>
   <h2>From strings to a genotype matrix</h2>

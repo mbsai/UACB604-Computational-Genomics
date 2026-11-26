@@ -42,7 +42,9 @@ body, .reveal-viewport { background: var(--paper); }
 .badge.bio  { background: #e3f6ea; color: #1f7a45; }
 
 /* Layout helpers */
-.cols { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2em; align-items: start; }
+/* align-items: stretch makes side-by-side boxes in one row the same height */
+.cols { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2em; align-items: stretch; }
+.cols > .panel, .cols > .widget.panel { box-sizing: border-box; }
 .cols.w60 { grid-template-columns: 3fr 2fr; }
 .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 0.7em 0.9em; }
 .callout { border-left: 6px solid var(--accent); background: #f6f3ff; padding: 0.5em 0.8em; border-radius: 6px; margin: 0.4em 0; }
