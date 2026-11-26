@@ -187,10 +187,86 @@
   <aside class="notes">8 min. Students work in pairs on their laptops. Answers in the teacher notes.</aside>
 </section>
 
-<!-- 9 · KEGG & Expasy -->
+<!-- 9 · KEGG & Expasy: how the data are stored -->
 <section>
   <div class="kicker">Beyond sequences <span class="badge bio">biology</span> <span class="badge math">maths</span></div>
   <h2>Pathways are graphs; proteins have masses</h2>
+  <div class="cols">
+    <div class="panel small" style="font-size:0.6em">
+      <h3 style="margin:0">KEGG</h3>
+      <p style="margin:0.2em 0">A pathway map (e.g. <span class="mono">hsa04115</span>, p53 signalling) is a <b>directed graph</b>: nodes = genes or compounds, edges = activation, inhibition, reaction. TP53 appears in <b>52</b> human KEGG pathways.</p>
+      <svg viewBox="0 0 560 190" width="100%" aria-label="A small directed graph from the p53 pathway">
+        <defs>
+          <marker id="kg-act" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#2e9e5b"/></marker>
+          <marker id="kg-exp" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#7d8697"/></marker>
+          <marker id="kg-inh" viewBox="0 0 4 14" refX="4" refY="7" markerWidth="4" markerHeight="12" orient="auto"><rect width="4" height="14" fill="#d0453f"/></marker>
+        </defs>
+        <g font-family="Helvetica, Arial, sans-serif" font-size="14">
+          <line x1="88" y1="52" x2="208" y2="88" stroke="#2e9e5b" stroke-width="3" marker-end="url(#kg-act)"/>
+          <text x="118" y="56" fill="#2e9e5b" font-size="12.5">activation, +p</text>
+          <line x1="88" y1="150" x2="208" y2="112" stroke="#d0453f" stroke-width="3" marker-end="url(#kg-inh)"/>
+          <text x="118" y="153" fill="#d0453f" font-size="12.5">inhibition</text>
+          <line x1="282" y1="100" x2="372" y2="100" stroke="#7d8697" stroke-width="3" stroke-dasharray="7 4" marker-end="url(#kg-exp)"/>
+          <text x="290" y="90" fill="#5b6475" font-size="12.5">expression</text>
+          <line x1="438" y1="116" x2="470" y2="150" stroke="#d0453f" stroke-width="3" marker-end="url(#kg-inh)"/>
+          <circle cx="60" cy="44" r="27" fill="#e3dcff" stroke="#6b4fd8" stroke-width="2"/><text x="60" y="49" text-anchor="middle" font-weight="700">ATM</text>
+          <circle cx="60" cy="156" r="27" fill="#e3dcff" stroke="#6b4fd8" stroke-width="2"/><text x="60" y="161" text-anchor="middle" font-weight="700">MDM4</text>
+          <circle cx="245" cy="100" r="35" fill="#6b4fd8"/><text x="245" y="105" text-anchor="middle" font-weight="700" fill="#fff">TP53</text>
+          <circle cx="408" cy="100" r="33" fill="#e3dcff" stroke="#6b4fd8" stroke-width="2"/><text x="408" y="105" text-anchor="middle" font-weight="700" font-size="13">CDKN1A</text>
+          <rect x="440" y="152" width="112" height="32" rx="16" fill="#e9ecf2" stroke="#5b6475"/><text x="496" y="173" text-anchor="middle" font-size="12.5" font-weight="700">CDK2·cyclin E</text>
+          <text x="245" y="160" text-anchor="middle" fill="#6b4fd8" font-size="12">node = gene (entry)</text>
+          <text x="245" y="176" text-anchor="middle" fill="#6b4fd8" font-size="12">arrow = edge (relation)</text>
+          <text x="440" y="40" text-anchor="middle" fill="#5b6475" font-size="12">in-degree of TP53 = 2</text>
+          <text x="440" y="56" text-anchor="middle" fill="#5b6475" font-size="12">out-degree = 1</text>
+        </g>
+      </svg>
+      <p style="margin:0.1em 0 0.15em"><b>Stored as</b> KGML: a list of nodes, then a list of edges (an <b>edge list</b>).</p>
+      <pre class="file" style="font-size:0.82em;margin:0"><span class="k">&lt;entry</span> id="50" name="hsa:7157" type="gene"<span class="k">/&gt;</span>   <span class="m">← node TP53</span>
+<span class="k">&lt;entry</span> id="10" name="hsa:472"  type="gene"<span class="k">/&gt;</span>   <span class="m">← node ATM</span>
+<span class="k">&lt;relation</span> entry1="10" entry2="50" type="PPrel"<span class="k">&gt;</span>  <span class="m">← edge ATM → TP53</span>
+  <span class="c">&lt;subtype name="activation"/&gt; &lt;subtype name="phosphorylation"/&gt;</span>
+<span class="k">&lt;/relation&gt;</span></pre>
+    </div>
+    <div class="panel small" style="font-size:0.6em">
+      <h3 style="margin:0">Expasy / UniProt</h3>
+      <p style="margin:0.2em 0">ProtParam computes a protein's mass from its sequence, the same idea as the peptide calculator in Lecture 1.2, using <b>average</b> residue masses. p53 (UniProt <span class="mono">P04637</span>): 393 amino acids, <b>43,653 Da</b>.</p>
+      <svg viewBox="0 0 560 190" width="100%" aria-label="Protein mass as a sum of residue masses">
+        <g font-family="Helvetica, Arial, sans-serif" text-anchor="middle">
+          <line x1="40" y1="60" x2="420" y2="60" stroke="#9aa3b2" stroke-width="3"/>
+          <line x1="440" y1="60" x2="520" y2="60" stroke="#9aa3b2" stroke-width="3" stroke-dasharray="4 5"/>
+          <g font-size="17" font-weight="700">
+            <circle cx="40" cy="60" r="24" fill="#ffe1ec"/><text x="40" y="66">M</text>
+            <circle cx="104" cy="60" r="24" fill="#e3f1ff"/><text x="104" y="66">E</text>
+            <circle cx="168" cy="60" r="24" fill="#e3f1ff"/><text x="168" y="66">E</text>
+            <circle cx="232" cy="60" r="24" fill="#e3f6ea"/><text x="232" y="66">P</text>
+            <circle cx="296" cy="60" r="24" fill="#fff4d6"/><text x="296" y="66">Q</text>
+            <circle cx="360" cy="60" r="24" fill="#fff4d6"/><text x="360" y="66">S</text>
+            <text x="440" y="66" font-weight="400" fill="#5b6475">…</text>
+            <circle cx="520" cy="60" r="24" fill="#e3f1ff"/><text x="520" y="66">D</text>
+          </g>
+          <g font-size="12.5" fill="#5b6475">
+            <text x="40" y="104">131.19</text><text x="104" y="104">129.12</text><text x="168" y="104">129.12</text><text x="232" y="104">97.12</text><text x="296" y="104">128.13</text><text x="360" y="104">87.08</text><text x="520" y="104">115.09</text>
+            <text x="40" y="22">1</text><text x="104" y="22">2</text><text x="168" y="22">3</text><text x="232" y="22">4</text><text x="296" y="22">5</text><text x="360" y="22">6</text><text x="520" y="22">393</text>
+          </g>
+          <text x="280" y="140" font-size="16" fill="#1d2433">mass = Σ (average residue masses) + 18.02 (one water)</text>
+          <text x="280" y="170" font-size="16" font-weight="700" fill="#6b4fd8">= 43,653.18 Da</text>
+        </g>
+      </svg>
+      <p style="margin:0.1em 0 0.15em"><b>Stored as</b> a UniProt flat-file record: two-letter line codes, like EMBL (Lecture 2.4).</p>
+      <pre class="file" style="font-size:0.82em;margin:0"><span class="k">ID</span>   P53_HUMAN      Reviewed;      393 AA.
+<span class="k">AC</span>   P04637; Q15086; Q15087; …
+<span class="k">GN</span>   Name=TP53; Synonyms=P53;
+<span class="k">SQ</span>   SEQUENCE   393 AA;  <span class="c">43653 MW</span>;  AD5C149FD8106131 CRC64;
+     MEEPQSDPSV EPPLSQETFS DLWKLLPENN …</pre>
+    </div>
+  </div>
+  <aside class="notes">4 min. Left: four real edges from KEGG hsa04115 and the KGML lines that store them (entry = node, relation = edge). Right: the mass is a plain sum; residue masses are amino-acid masses minus water, so one water is added back for the two ends. The SQ line in the UniProt record already holds the answer (43653 MW). Next slide: the same things on the real websites.</aside>
+</section>
+
+<!-- 9b · KEGG & Expasy on the real websites -->
+<section>
+  <div class="kicker">On the real websites <span class="badge bio">practice</span></div>
+  <h2>KEGG and UniProt on the real websites</h2>
   <div class="cols">
     <div class="panel"><h3 style="margin:0 0 0.2em">KEGG</h3><div id="tour-kegg"></div></div>
     <div class="panel"><h3 style="margin:0 0 0.2em">UniProt / Expasy</h3><div id="tour-mass"></div></div>
