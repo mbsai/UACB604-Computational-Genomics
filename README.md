@@ -13,7 +13,7 @@ Interactive lecture slides and notebooks for UACB-604 (B.Sc. AI & Computational 
 | Unit | Topic | Status |
 |---|---|---|
 | 1 | Introduction, genome organisation, genome maps, public databases | ✅ 5 lectures (1.1–1.5) |
-| 2 | Sequencing technologies, file formats, data retrieval | — |
+| 2 | Sequencing technologies, file formats, data retrieval | ✅ 5 lectures (2.1–2.5) |
 | 3 | Linux and R for genomics | — |
 | 4 | EMBOSS, HPC, wet-lab concepts | — |
 | 5 | Coverage, k-mers, assembly algorithms | — |

@@ -26,8 +26,11 @@
   <h2 class="unit">Unit 1 · Genomes, omics and where the data lives</h2>
   <div id="u1"></div>
 
-  <h2 class="unit">Units 2–12</h2>
-  <p class="soon">Sequencing technologies and file formats · Linux and R · assembly · annotation · phylogeny · single-cell and multi-omics · metagenomics. Coming during the semester.</p>
+  <h2 class="unit">Unit 2 · Sequencing technologies, file formats and data retrieval</h2>
+  <div id="u2"></div>
+
+  <h2 class="unit">Units 3–12</h2>
+  <p class="soon">Linux and R · assembly · annotation · phylogeny · single-cell and multi-omics · metagenomics. Coming during the semester.</p>
 
   <p class="muted small" style="margin-top:2em">Notebooks open in Google Colab (sign in with a Google account). For R notebooks choose <b>Runtime → Change runtime type → R</b>.
   Reference books: Brown, <i>Genomes 5</i>; Pevsner, <i>Bioinformatics and Functional Genomics</i>; Akalin, <i>Computational Genomics with R</i>; Buffalo, <i>Bioinformatics Data Skills</i>.</p>
@@ -41,10 +44,19 @@ var U1 = [
   ['1.4', 'Genome maps', 'Recombination, Poisson crossovers, Haldane map function', 'unit01/1.4_genome_maps.html', 'unit01/notebooks/1.4_genetic_maps.ipynb', 'R'],
   ['1.5', 'Public databases', 'Identifiers, assemblies, coordinate systems, APIs', 'unit01/1.5_public_databases.html', 'unit01/notebooks/1.5_database_apis.ipynb', 'Python']
 ];
-document.getElementById('u1').innerHTML = U1.map(function (l) {
+var U2 = [
+  ['2.1', 'Sanger sequencing', 'Chain termination, geometric lengths, Phred scores', 'unit02/2.1_sanger_sequencing.html', 'unit02/notebooks/2.1_sanger_simulation.ipynb', 'Python'],
+  ['2.2', 'Illumina short reads', 'Sequencing by synthesis, phasing, FASTQ quality, paired ends', 'unit02/2.2_illumina_short_reads.html', 'unit02/notebooks/2.2_illumina_fastq.ipynb', 'Python'],
+  ['2.3', 'Long and linked reads', 'PacBio HiFi, Nanopore, TELL-Seq; consensus, N50, barcodes', 'unit02/2.3_long_linked_reads.html', 'unit02/notebooks/2.3_long_reads.ipynb', 'Python'],
+  ['2.4', 'Sequence file formats', 'FASTA, GenBank, EMBL, XML, FASTQ, fast5', 'unit02/2.4_file_formats.html', 'unit02/notebooks/2.4_file_formats.ipynb', 'R'],
+  ['2.5', 'Finding and downloading data', 'SRA, BioProject, accessions, wget, FTP, checksums', 'unit02/2.5_sra_data_retrieval.html', 'unit02/notebooks/2.5_data_retrieval.ipynb', 'Python']
+];
+function render(list) { return list.map(function (l) {
   return '<div class="lect"><div class="t"><b>' + l[0] + ' · ' + l[1] + '</b><span>' + l[2] + '</span></div>' +
     '<div class="links"><a class="btn" href="' + l[3] + '">Slides</a><a class="btn ghost" href="' + COLAB + l[4] + '" target="_blank">Notebook (' + l[5] + ')</a></div></div>';
-}).join('');
+}).join(''); }
+document.getElementById('u1').innerHTML = render(U1);
+document.getElementById('u2').innerHTML = render(U2);
 </script>
 </body>
 </html>

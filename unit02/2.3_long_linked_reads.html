@@ -1,0 +1,284 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>2.3 Long and Linked Reads</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.1.0/reveal.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.1.0/theme/white.min.css">
+<link rel="stylesheet" href="../assets/css/course.css">
+<style> .c-card { font-size: 1.15em; font-weight: 700; min-height: 2.4em; } #sq-in { font-size: 0.9em !important; } </style>
+</head>
+<body>
+<div class="reveal"><div class="slides">
+
+<!-- 1 · Title -->
+<section class="title-slide center">
+  <div class="course">UACB-604 · Computational Genomics · Lecture 2.3</div>
+  <h1>Long reads and linked reads</h1>
+  <div class="dna-strip" id="title-dna"></div>
+  <p class="muted small">PacBio · Oxford Nanopore · 10x / TELL-Seq linked reads</p>
+  <aside class="notes">45 min. Maths today: why length beats repeats, majority-vote consensus (binomial), N50, and the birthday problem.</aside>
+</section>
+
+<!-- 2 · Why length matters -->
+<section>
+  <div class="kicker">Why read length matters <span class="badge bio">biology</span> <span class="badge math">maths</span></div>
+  <h2>Short reads get lost in repeats</h2>
+  <svg viewBox="0 0 1180 230" width="100%">
+    <rect x="20" y="90" width="1140" height="18" rx="5" fill="#dde2ea"/>
+    <rect x="250" y="90" width="200" height="18" fill="#d64545"/><rect x="760" y="90" width="200" height="18" fill="#d64545"/>
+    <text x="350" y="130" text-anchor="middle" font-size="15" fill="#d64545" font-weight="700">repeat copy 1</text>
+    <text x="860" y="130" text-anchor="middle" font-size="15" fill="#d64545" font-weight="700">repeat copy 2</text>
+    <rect x="300" y="60" width="90" height="12" rx="4" fill="#e0a100"/><text x="345" y="50" text-anchor="middle" font-size="14" fill="#b37f00">short read: copy 1 or 2?</text>
+    <rect x="200" y="160" width="330" height="12" rx="4" fill="#6b4fd8"/><text x="365" y="195" text-anchor="middle" font-size="14" fill="#6b4fd8">long read: spans the repeat + unique flanks → placed</text>
+    <text x="1160" y="40" text-anchor="end" font-size="14" fill="#5b6475">Genome (grey) with two identical repeat copies (red)</text>
+  </svg>
+  <div class="cols">
+    <div class="small">
+      <p>A read is placed uniquely only if it contains unique sequence (Lecture 1.1: k-mers become unique at \(k \gtrsim \log_4 n\)). A read lying <b>entirely inside</b> a repeat can't be placed.</p>
+      <p>Human repeats: <i>Alu</i> ~300 bp (a million copies), full-length LINE-1 ~6 kb, centromeric arrays spanning megabases.</p>
+    </div>
+    <div class="panel" id="hook-q"></div>
+  </div>
+  <aside class="notes">3 min. This is the motivation for the whole lecture, and for long-read assembly in Units 6–7.</aside>
+</section>
+
+<!-- 3 · PacBio + HiFi -->
+<section>
+  <div class="kicker">PacBio SMRT sequencing <span class="badge">interactive</span> <span class="badge math">maths</span></div>
+  <h2>HiFi: read one molecule many times</h2>
+  <div class="cols w60">
+    <div class="small">
+      <p>One polymerase sits at the bottom of a tiny well (a <b>zero-mode waveguide</b>) and copies one DNA molecule; each incorporated nucleotide flashes its colour. Millions of wells are watched at once.</p>
+      <p>The DNA is made <b>circular</b> (a “SMRTbell”), so the polymerase goes round and round: one insert read in many <b>passes</b>. Single passes are noisy (~10% errors, mostly insertions/deletions); a <b>consensus</b> of many passes is very accurate.</p>
+      <div class="panel" id="hifi-q"></div>
+    </div>
+    <div class="widget panel">
+      error per pass \(e\) = <b id="hf-e-v"></b>
+      <input type="range" id="hf-e" min="0.02" max="0.2" step="0.01" value="0.1">
+      passes \(n\) = <b id="hf-n-v"></b>
+      <input type="range" id="hf-n" min="1" max="21" step="2" value="9">
+      <div class="stat-row"><div class="stat"><b id="hf-p"></b><span>consensus error</span></div><div class="stat"><b id="hf-q"></b><span>Phred Q</span></div></div>
+      <p>Majority vote is wrong only if more than half the passes are wrong:</p>
+      $$\sum_{k>n/2}\binom{n}{k}e^k(1-e)^{n-k}$$
+      <p class="tiny">Simplified model: real errors are mostly indels and the consensus uses a statistical model, but the trend is the same. HiFi reads: typically 15–20 kb at Q30 or better.</p>
+    </div>
+  </div>
+  <aside class="notes">6 min. The sum is the binomial distribution (primer §8): k wrong passes out of n. With e = 0.1: 1 pass Q10, 5 passes Q21, 9 passes Q31.</aside>
+</section>
+
+<!-- 4 · Nanopore + squiggle -->
+<section>
+  <div class="kicker">Oxford Nanopore <span class="badge">interactive</span> <span class="badge math">maths</span></div>
+  <h2>Reading DNA as an electric current</h2>
+  <div class="cols w60">
+    <div class="widget">
+      sequence: <input type="text" id="sq-in" class="mono" value="ACGTTGCAAAAAAAATGCCGTA">
+      <svg id="sq-chart" viewBox="0 0 640 230" width="100%"></svg>
+      <p><button data-sq="ACGTTGCAAAAAAAATGCCGTA">with AAAAAAAA</button><button data-sq="ACGTTGCAAAATGCCGTA">with AAAA</button><button data-sq="GATTACAGATTACAGATTACA">random-ish</button></p>
+    </div>
+    <div class="small">
+      <p>A motor protein ratchets single-stranded DNA through a protein <b>pore</b> in a membrane. Ions flowing through the pore give a current that depends on the ~5–9 bases inside it at that moment (a <b>k-mer</b>).</p>
+      <p>The raw current trace (the “squiggle”) is turned into bases by a <b>neural network</b> (basecallers such as Guppy and its successor Dorado).</p>
+      <p class="fragment"><b>Try the homopolymer:</b> eight A's give one long flat step, the same as four A's but longer. Counting bases means estimating time, and that's noisy. Homopolymer lengths are a classic nanopore error.</p>
+    </div>
+  </div>
+  <aside class="notes">6 min. This simulator gives each 5-mer a made-up current level; real tables are learned from data. Reads can be very long: >100 kb is routine, records exceed a megabase. Portable (MinION, USB-powered).</aside>
+</section>
+
+<!-- 5 · Real reads + N50 -->
+<section>
+  <div class="kicker">Real data <span class="badge math">maths</span></div>
+  <h2>3,000 real Nanopore reads</h2>
+  <div class="cols">
+    <div class="small">
+      <p>MinION run DRR242229 (<i>E. coli</i> clinical isolate, 2020 chemistry), first 3,000 reads:</p>
+      <div class="stat-row">
+        <div class="stat"><b>122 bp</b><span>shortest</span></div>
+        <div class="stat"><b>2,554</b><span>median</span></div>
+        <div class="stat"><b>4,080</b><span>mean</span></div>
+        <div class="stat"><b>7,096</b><span>N50</span></div>
+        <div class="stat"><b>56,275</b><span>longest</span></div>
+      </div>
+      <p>Mean per-read quality ≈ Q10 (~10% errors). Current chemistries reach Q20 and above.</p>
+      <p class="callout"><b>N50:</b> sort reads longest first and add up their lengths; N50 is the length at which you pass <b>half of all bases</b>. “Half the data is in reads at least this long.” Used again for assemblies (Unit 7).</p>
+    </div>
+    <div>
+      <div class="panel" id="n50-q"></div>
+      <p class="tiny">You'll reproduce these numbers in the notebook by streaming the reads directly from ENA.</p>
+    </div>
+  </div>
+  <aside class="notes">4 min. Why N50 > mean > median: a few long reads hold a large share of the bases.</aside>
+</section>
+
+<!-- 6 · Linked reads + birthday -->
+<section>
+  <div class="kicker">Linked reads <span class="badge">interactive</span> <span class="badge math">maths</span></div>
+  <h2>Long-range information from short reads</h2>
+  <div class="cols w60">
+    <div class="small">
+      <p>Long DNA molecules (tens of kb) are each tagged with a <b>barcode</b>; all short reads from one molecule carry the same barcode. Sequenced on an ordinary Illumina machine, they form “virtual long reads”.</p>
+      <ul>
+        <li><b>10x Genomics Chromium</b> linked reads: barcodes in tiny droplets (discontinued in 2020)</li>
+        <li><b>TELL-Seq</b>: barcoded beads in a single tube, no special instrument</li>
+        <li>Uses: phasing haplotypes, scaffolding assemblies (e.g. the Supernova assembler, Unit 6)</li>
+      </ul>
+      <p><b>Catch:</b> two molecules may get the same barcode, like two people sharing a birthday.</p>
+    </div>
+    <div class="widget panel">
+      molecules \(m\) = <b id="bd-m-v"></b>
+      <input type="range" id="bd-m" min="1" max="5" step="0.05" value="3">
+      barcodes \(N\) = <b id="bd-n-v"></b>
+      <input type="range" id="bd-n" min="3" max="7" step="0.1" value="6">
+      <div class="stat-row"><div class="stat"><b id="bd-p"></b><span>P(at least one shared barcode)</span></div><div class="stat"><b id="bd-e"></b><span>expected shared pairs</span></div></div>
+      $$P \approx 1 - e^{-m(m-1)/2N}, \quad E = \frac{m(m-1)}{2N}$$
+      <p class="tiny">Try m = 23, N = 365: the classic birthday puzzle (≈ 50%).</p>
+    </div>
+  </div>
+  <aside class="notes">5 min. Collisions grow with m², not m. That's why protocols load a small amount of DNA per barcode set.</aside>
+</section>
+
+<!-- 7 · Pick the technology -->
+<section data-results="board">
+  <div class="kicker">Game: you are the lab head <span class="badge game">game</span></div>
+  <h2>Which technology would you choose?</h2>
+  <div id="tech-game" class="panel" style="max-width:1000px;margin:0 auto"></div>
+  <aside class="notes">5 min. Some scenarios accept two answers. Discuss trade-offs: cost, accuracy, length, portability.</aside>
+</section>
+
+<!-- 8 · Comparison table -->
+<section>
+  <div class="kicker">Summary <span class="badge bio">biology</span></div>
+  <h2>Sequencing technologies side by side</h2>
+  <table class="tbl" style="font-size:0.58em">
+    <tr><th></th><th>Sanger</th><th>Illumina</th><th>PacBio HiFi</th><th>Nanopore</th><th>Linked reads</th></tr>
+    <tr><td><b>Read length</b></td><td>~1 kb</td><td>50–300 bp</td><td>~15–20 kb</td><td>kb to &gt;1 Mb</td><td>short reads, linked over tens of kb</td></tr>
+    <tr><td><b>Accuracy</b></td><td>very high</td><td>high (~0.1–1% errors)</td><td>very high (Q30+)</td><td>improving: ~Q10 (older) to Q20+</td><td>as Illumina</td></tr>
+    <tr><td><b>Main error type</b></td><td>end of read</td><td>substitutions</td><td>few, random</td><td>indels, homopolymers</td><td>barcode collisions</td></tr>
+    <tr><td><b>Throughput</b></td><td>one read per reaction</td><td>highest</td><td>high</td><td>flexible: one flow cell to many</td><td>as Illumina</td></tr>
+    <tr><td><b>Best for</b></td><td>confirming variants, clones</td><td>RNA-seq, resequencing, cheap depth</td><td>accurate assemblies, variants in repeats</td><td>ultra-long reads, field work, native methylation</td><td>phasing, scaffolding</td></tr>
+  </table>
+  <p class="tiny">Numbers are typical and change fast; check current specifications before planning a project.</p>
+  <aside class="notes">3 min.</aside>
+</section>
+
+<!-- 9 · Quiz -->
+<section>
+  <div class="kicker">Exit quiz <span class="badge game">game</span></div>
+  <h2>Four questions</h2>
+  <div class="cols">
+    <div class="panel" id="q1"></div><div class="panel" id="q2"></div>
+    <div class="panel" id="q3"></div><div class="panel" id="q4"></div>
+  </div>
+</section>
+
+<!-- 10 · Wrap-up -->
+<section>
+  <div class="kicker">Wrap-up</div>
+  <h2>Today in one slide</h2>
+  <ul>
+    <li>Long reads span repeats that defeat short reads.</li>
+    <li>PacBio HiFi: many noisy passes → accurate consensus (binomial majority vote).</li>
+    <li>Nanopore: current from a k-mer in a pore → neural-network basecalling; homopolymers are hard.</li>
+    <li>N50: half the bases are in reads at least this long.</li>
+    <li>Linked reads: barcodes give long-range links; collisions follow the birthday problem.</li>
+  </ul>
+  <div class="cols" style="margin-top:0.6em">
+    <div class="panel small"><b>Notebook (Colab, Python):</b> <a href="https://colab.research.google.com/github/mbsai/UACB604-Computational-Genomics/blob/main/unit02/notebooks/2.3_long_reads.ipynb" target="_blank">2.3_long_reads.ipynb</a><br>Real Nanopore reads, N50, HiFi consensus simulation, barcode collisions.</div>
+    <div class="panel small"><b>Reading:</b> Pevsner, ch. 9 · Brown, <i>Genomes 5</i>, ch. 4<br><b>Next: Lecture 2.4</b>, sequence file formats.</div>
+  </div>
+</section>
+
+</div></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.1.0/reveal.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.1.0/plugin/math/math.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.1.0/plugin/notes/notes.min.js"></script>
+<script src="../assets/js/live.js"></script>
+<script src="../assets/js/course.js"></script>
+<script>
+CG.initDeck();
+var $ = function (id) { return document.getElementById(id); };
+$('title-dna').innerHTML = CG.colorSeq(CG.randomSeq(70));
+
+CG.mcq($('hook-q'), { id: 'hook', q: 'To place a read uniquely across a full-length 6 kb LINE-1 repeat, reads must be…',
+  options: ['about 150 bp', 'about 1 kb', 'longer than 6 kb'], answer: 2, explain: 'Only reads that span the whole repeat reach unique sequence on both sides.' });
+
+// ---------- HiFi consensus ----------
+function comb(n, k) { var r = 1; for (var i = 1; i <= k; i++) r = r * (n - k + i) / i; return r; }
+function majErr(e, n) { var s = 0; for (var k = Math.floor(n / 2) + 1; k <= n; k++) s += comb(n, k) * Math.pow(e, k) * Math.pow(1 - e, n - k); return s; }
+(function () {
+  function draw() {
+    var e = +$('hf-e').value, n = +$('hf-n').value, p = majErr(e, n);
+    $('hf-e-v').textContent = e.toFixed(2); $('hf-n-v').textContent = n;
+    $('hf-p').textContent = p.toExponential(1); $('hf-q').textContent = 'Q' + Math.round(-10 * Math.log10(p));
+  }
+  $('hf-e').addEventListener('input', draw); $('hf-n').addEventListener('input', draw); draw();
+})();
+CG.mcq($('hifi-q'), { id: 'hifi', q: 'Each pass has 10% errors. Roughly how many passes reach Q30?',
+  options: ['3', '9', '50'], answer: 1, explain: 'With e = 0.1, 9 passes give about Q31 (check with the sliders).' });
+
+// ---------- Squiggle simulator ----------
+(function () {
+  var svg = $('sq-chart');
+  function level(kmer) { var h = 0; for (var i = 0; i < kmer.length; i++) h = (h * 31 + kmer.charCodeAt(i)) % 9973; return 60 + (h % 70); }
+  function draw() {
+    var s = CG.clean($('sq-in').value).replace(/N/g, ''); if (s.length < 6) s = s + 'ACGTAC';
+    var seed = 7; function rnd() { seed = (seed * 16807) % 2147483647; return seed / 2147483647; }
+    var pts = [];
+    for (var i = 0; i + 5 <= s.length; i++) {
+      var lv = level(s.substr(i, 5)), dwell = 5 + Math.floor(rnd() * 9);
+      for (var t = 0; t < dwell; t++) pts.push({ v: lv + (rnd() - 0.5) * 6, k: s.substr(i, 5) });
+    }
+    while (svg.firstChild) svg.removeChild(svg.firstChild);
+    var x0 = 40, x1 = 630, y0 = 200, y1 = 15;
+    function X(i) { return x0 + i / Math.max(1, pts.length - 1) * (x1 - x0); } function Y(v) { return y0 - (v - 50) / 90 * (y0 - y1); }
+    var d = ''; pts.forEach(function (p, i) { d += (i ? 'L' : 'M') + X(i) + ' ' + Y(p.v); });
+    CG.svgEl('path', { d: d, fill: 'none', stroke: '#2f6fd6', 'stroke-width': 1.8 }, svg);
+    CG.svgEl('line', { x1: x0, x2: x1, y1: y0, y2: y0, stroke: '#9aa3b2' }, svg);
+    CG.svgText(svg, (x0 + x1) / 2, y0 + 22, 'time →  (each step = one 5-mer in the pore)', { 'text-anchor': 'middle', 'font-size': 13, fill: '#5b6475' });
+    CG.svgText(svg, 14, (y0 + y1) / 2, 'current (pA)', { 'text-anchor': 'middle', 'font-size': 12, fill: '#5b6475', transform: 'rotate(-90 14 ' + (y0 + y1) / 2 + ')' });
+  }
+  $('sq-in').addEventListener('input', draw);
+  document.querySelectorAll('[data-sq]').forEach(function (b) { b.onclick = function () { $('sq-in').value = b.dataset.sq; draw(); }; });
+  draw();
+})();
+
+CG.mcq($('n50-q'), { id: 'n50', q: 'Reads of 2, 2, 2, 2 and 10 kb. N50 = ?',
+  options: ['2 kb', '3.6 kb', '10 kb'], answer: 2, explain: 'Total 18 kb, half = 9 kb. Longest first: the 10 kb read alone passes 9 kb → N50 = 10 kb.' });
+
+// ---------- Birthday problem ----------
+(function () {
+  function draw() {
+    var m = Math.round(Math.pow(10, +$('bd-m').value)), N = Math.round(Math.pow(10, +$('bd-n').value));
+    $('bd-m-v').textContent = m.toLocaleString(); $('bd-n-v').textContent = N.toLocaleString();
+    var E = m * (m - 1) / (2 * N), P = 1 - Math.exp(-E);
+    $('bd-p').textContent = (P * 100).toFixed(P < 0.01 ? 2 : 0) + '%'; $('bd-e').textContent = CG.fmtNum(E);
+  }
+  $('bd-m').addEventListener('input', draw); $('bd-n').addEventListener('input', draw); draw();
+})();
+
+// ---------- Technology game ----------
+var T = ['Sanger', 'Illumina', 'PacBio HiFi', 'Nanopore', 'Linked reads'];
+CG.cardGame($('tech-game'), [
+  { html: 'Confirm one suspected mutation in a patient\'s <i>BRCA1</i> exon', options: T, answer: 0, explain: 'One short region, highest accuracy, cheap: Sanger.' },
+  { html: 'Measure gene expression in 60 tumour samples (RNA-seq)', options: T, answer: 1, explain: 'Millions of cheap short reads per sample: Illumina.' },
+  { html: 'Assemble a new plant genome full of long repeats, with high accuracy', options: T, answer: [2, 3], explain: 'Long reads span repeats; HiFi adds accuracy, Nanopore adds length. Both are used (often together).' },
+  { html: 'Sequence an outbreak virus in a remote clinic with no sequencing lab', options: T, answer: 3, explain: 'A MinION is pocket-sized and USB-powered.' },
+  { html: 'Separate the two parental haplotypes using only a short-read machine', options: T, answer: 4, explain: 'Barcodes link reads from the same long molecule (TELL-Seq).' },
+  { html: 'Detect DNA methylation directly on native DNA, without bisulfite', options: T, answer: [2, 3], explain: 'Modified bases change the nanopore current and PacBio polymerase kinetics.' }
+], { id: 'tech', label: 'Pick the technology' });
+
+// ---------- Quiz ----------
+CG.mcq($('q1'), { id: 'quiz1', q: '1. Why are PacBio HiFi reads accurate although single passes are noisy?',
+  options: ['each molecule is read many times', 'the polymerase is slower', 'the reads are shorter'], answer: 0, explain: 'Consensus over many passes.' });
+CG.mcq($('q2'), { id: 'quiz2', q: '2. Nanopore reads struggle most with…',
+  options: ['GC-rich regions', 'homopolymer lengths', 'read length'], answer: 1, explain: 'A run of identical bases gives one flat current step.' });
+CG.mcq($('q3'), { id: 'quiz3', q: '3. Doubling the number of molecules per barcode set makes expected collisions…',
+  options: ['double', '4× as many', 'stay the same'], answer: 1, explain: 'E ≈ m²/2N grows with m squared.' });
+CG.mcq($('q4'), { id: 'quiz4', q: '4. Assembly A has N50 = 50 kb, B has N50 = 5 Mb. Usually…',
+  options: ['A is more contiguous', 'B is more contiguous', 'N50 says nothing'], answer: 1, explain: 'Half of B is in pieces ≥ 5 Mb (Unit 7: always check correctness too).' });
+</script>
+</body>
+</html>

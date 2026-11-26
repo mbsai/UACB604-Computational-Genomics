@@ -1,0 +1,344 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>2.4 Sequence File Formats</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.1.0/reveal.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.1.0/theme/white.min.css">
+<link rel="stylesheet" href="../assets/css/course.css">
+<style>
+  .c-card pre.file { font-size: 0.95em; text-align: left; margin: 0 auto; max-width: 95%; }
+  .ascii { display: grid; grid-template-columns: repeat(6, 1fr); gap: 4px; font-size: 0.62em; }
+  .ascii div { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; text-align: center; padding: 2px 0; }
+  .ascii b { display: block; font-family: var(--r-code-font); font-size: 1.4em; }
+</style>
+</head>
+<body>
+<div class="reveal"><div class="slides">
+
+<!-- 1 · Title -->
+<section class="title-slide center">
+  <div class="course">UACB-604 · Computational Genomics · Lecture 2.4</div>
+  <h1>Sequence file formats</h1>
+  <div class="dna-strip" id="title-dna"></div>
+  <p class="muted small">FASTA · GenBank · EMBL · XML · FASTQ · fast5 / POD5</p>
+  <aside class="notes">45 min. All examples are real records of phage φX174 (NC_001422 / J02482) and real reads. Maths: encoding (ASCII), file-size arithmetic.</aside>
+</section>
+
+<!-- 2 · Hook -->
+<section>
+  <div class="kicker">Warm-up <span class="badge">interactive</span></div>
+  <h2>One genome, five files</h2>
+  <div class="cols">
+    <div>
+      <p class="small">The 5,386-base genome of φX174 downloaded in four formats:</p>
+      <svg id="size-chart" viewBox="0 0 560 230" width="100%"></svg>
+    </div>
+    <div>
+      <div class="panel" id="hook-q"></div>
+      <p class="small">A format is a <b>contract</b>: the order and meaning of every line, so a program written by someone else can read your file.</p>
+    </div>
+  </div>
+  <aside class="notes">3 min. Sizes measured in the 2.4 notebook: FASTA 5.5 kB, GenBank 26.2, EMBL 26.2, XML 71.3. The 2-bit minimum would be 1.3 kB.</aside>
+</section>
+
+<!-- 3 · FASTA -->
+<section>
+  <div class="kicker">FASTA</div>
+  <h2>FASTA: a name and a sequence</h2>
+  <pre class="file"><span class="k">&gt;NC_001422.1 Escherichia phage phiX174, complete genome</span>
+GAGTTTTATCGCTTCCATGACGCAGAAGTTAACACTTTCGGATATTTCTGATGAGTCGAAAAATTATCTT
+GATAAAGCAGGAATTACTACTGCTTGTTTACGAATTAAATCGAAGTGGACTGCTGGCGGAAAATGAGAAA
+<span class="m">… 77 lines of 70 bases, then the last 66 …</span></pre>
+  <div class="cols small">
+    <div>
+      <ul>
+        <li>Header line starts with <code>&gt;</code>: the first word is the ID, the rest is a free description</li>
+        <li>Sequence on the following lines (often wrapped at 60–80 characters)</li>
+        <li>Many records in one file = “multi-FASTA”</li>
+        <li>Used for DNA, RNA and protein; no annotation, no quality</li>
+      </ul>
+    </div>
+    <div class="panel"><b>Your genome as a string (1.1)</b> in its simplest file form. Nearly every tool accepts FASTA. Common extensions: <code>.fa</code>, <code>.fasta</code>, <code>.fna</code> (nucleotide), <code>.faa</code> (protein).</div>
+  </div>
+  <aside class="notes">3 min.</aside>
+</section>
+
+<!-- 4 · GenBank -->
+<section>
+  <div class="kicker">GenBank flat file</div>
+  <h2>GenBank: a labelled record</h2>
+  <div class="cols w60">
+    <pre class="file"><span class="k">LOCUS</span>       NC_001422     5386 bp ss-DNA  circular PHG 11-JAN-2023
+<span class="k">DEFINITION</span>  Escherichia phage phiX174, complete genome.
+<span class="k">ACCESSION</span>   NC_001422
+<span class="k">VERSION</span>     NC_001422.1
+<span class="k">DBLINK</span>      BioProject: PRJNA485481
+<span class="m">…</span>
+<span class="k">FEATURES</span>             Location/Qualifiers
+     <span class="c">CDS</span>             join(3981..5386,1..136)
+                     /locus_tag="phiX174p01"
+                     /product="DNA replication initiation"
+                     /protein_id="NP_040703.1"
+                     /translation="MVRSYYPSECHADYFDFERIEALKPAIEACGIS…"
+<span class="m">…</span>
+<span class="k">ORIGIN</span>
+        1 gagttttatc gcttccatga cgcagaagtt aacactttcg gatatttctg
+<span class="m">…</span>
+<span class="k">//</span></pre>
+    <div class="small">
+      <p>Keywords at the left margin; the <b>FEATURES</b> table holds the annotation; the sequence comes after <b>ORIGIN</b>, numbered; <code>//</code> ends the record.</p>
+      <div class="callout q">Look at <code>join(3981..5386,1..136)</code>: this gene runs past the end of the circular genome and continues at base 1. Coordinates are <b>1-based and closed</b> (Lecture 1.5).</div>
+      <div class="panel" id="gb-q"></div>
+    </div>
+  </div>
+  <aside class="notes">5 min. Biopython reads exactly this (Lecture 1.3 notebook).</aside>
+</section>
+
+<!-- 5 · EMBL + XML -->
+<section>
+  <div class="kicker">EMBL and XML</div>
+  <h2>The same information, other layouts</h2>
+  <div class="cols">
+    <div>
+      <p class="small"><b>EMBL</b> (ENA record J02482): two-letter line codes, <code>XX</code> spacer lines.</p>
+      <pre class="file"><span class="k">ID</span>   J02482; SV 1; circular; genomic DNA; STD; VRL; 5386 BP.
+<span class="k">XX</span>
+<span class="k">AC</span>   J02482; M10348; M10379; M10714; …
+<span class="k">DE</span>   Coliphage phi-X174, complete genome.
+<span class="k">OS</span>   Escherichia virus phiX174
+<span class="k">FT</span>   <span class="c">CDS</span>             join(3981..5386,1..136)
+<span class="k">SQ</span>   Sequence 5386 BP; 1291 A; 1157 C; 1254 G; 1684 T;
+     gagttttatc gcttccatga cgcagaagtt …</pre>
+      <table class="tbl" style="font-size:0.5em"><tr><th>GenBank</th><td>LOCUS</td><td>DEFINITION</td><td>ACCESSION</td><td>FEATURES</td><td>ORIGIN</td></tr>
+        <tr><th>EMBL</th><td>ID</td><td>DE</td><td>AC</td><td>FT</td><td>SQ</td></tr></table>
+    </div>
+    <div>
+      <p class="small"><b>XML</b> (NCBI GBSeq): every value between named tags, built for programs.</p>
+      <pre class="file"><span class="m">&lt;GBSeq&gt;</span>
+  <span class="k">&lt;GBSeq_locus&gt;</span>NC_001422<span class="k">&lt;/GBSeq_locus&gt;</span>
+  <span class="k">&lt;GBSeq_length&gt;</span>5386<span class="k">&lt;/GBSeq_length&gt;</span>
+  <span class="k">&lt;GBSeq_topology&gt;</span>circular<span class="k">&lt;/GBSeq_topology&gt;</span>
+  <span class="k">&lt;GBSeq_definition&gt;</span>Escherichia phage phiX174,
+      complete genome<span class="k">&lt;/GBSeq_definition&gt;</span>
+  <span class="m">…</span>
+<span class="m">&lt;/GBSeq&gt;</span></pre>
+      <p class="small">Bulky (71 kB for this genome) but unambiguous. JSON is the modern lighter cousin (the APIs in 1.5).</p>
+    </div>
+  </div>
+  <aside class="notes">4 min. INSDC: GenBank, ENA (EMBL format) and DDBJ hold the same records.</aside>
+</section>
+
+<!-- 6 · FASTQ + ASCII -->
+<section>
+  <div class="kicker">FASTQ <span class="badge math">maths</span></div>
+  <h2>FASTQ: sequence plus quality, four lines per read</h2>
+  <div class="cols w60">
+    <pre class="file" style="margin:0"><span class="k">@SRR41113426.1 M01380:141:000000000-C9GH3:1:1102:24051:2228/1</span>
+GGAGTTTAATCATGTTTCAGGGGTTTATTTCTCGCCATAATTC…
+<span class="k">+</span>
+GGGFGGGGGGGGGGGAFGGGGGGFDGGGGGGGGGGGDFFGGGG…</pre>
+    <ol class="small" style="margin:0">
+      <li><code>@</code> + read name (instrument, run, flow cell, tile, x, y, mate)</li>
+      <li>the sequence</li>
+      <li><code>+</code> separator</li>
+      <li>one quality character per base</li>
+    </ol>
+  </div>
+  <div class="cols">
+    <div class="small">
+      <p>Quality characters encode Phred scores as <b>ASCII code − 33</b> (“Phred+33”, standard since ~2011; some old Illumina files used +64).</p>
+      <div class="ascii" id="ascii"></div>
+    </div>
+    <div class="small">
+      <p><b>Why add 33?</b> ASCII codes 0–32 are invisible control characters and the space. Code 33 (<code>!</code>) is the first printable one, so Q0 → <code>!</code>.</p>
+      <p>Real φX174 MiSeq read above: <code>G</code> = 71 − 33 = <b>Q38</b>.</p>
+    </div>
+  </div>
+  <aside class="notes">4 min. Watch out: '@' can also appear as a quality character, so never parse FASTQ by searching for lines that start with '@'. Count lines in fours.</aside>
+</section>
+
+<!-- 7 · Decode game -->
+<section data-results="board">
+  <div class="kicker">Game: decode the quality <span class="badge game">game</span></div>
+  <h2>What Phred score is this character?</h2>
+  <div id="decode-game" class="panel" style="max-width:900px;margin:0 auto"></div>
+  <p class="small" style="text-align:center">Use the ASCII table on the previous slide, or remember: <code>5</code>=53, <code>?</code>=63, <code>I</code>=73.</p>
+  <aside class="notes">4 min. Six characters; each first answer counts.</aside>
+</section>
+
+<!-- 8 · fast5 / POD5 / BAM -->
+<section>
+  <div class="kicker">Raw signal and long reads <span class="badge bio">biology</span></div>
+  <h2>fast5, POD5 and BAM</h2>
+  <div class="cols">
+    <div>
+      <svg viewBox="0 0 520 300" width="100%">
+        <g font-family="JetBrains Mono, monospace" font-size="15">
+          <rect x="10" y="10" width="220" height="34" rx="8" fill="#e3dcff"/><text x="22" y="32">reads.fast5  (HDF5)</text>
+          <line x1="40" y1="44" x2="40" y2="270" stroke="#9aa3b2" stroke-width="2"/>
+          <line x1="40" y1="75" x2="70" y2="75" stroke="#9aa3b2" stroke-width="2"/><rect x="70" y="58" width="200" height="32" rx="8" fill="#f4f6fa" stroke="#dde2ea"/><text x="82" y="79">read_0001/</text>
+          <line x1="100" y1="90" x2="100" y2="240" stroke="#9aa3b2" stroke-width="2"/>
+          <line x1="100" y1="120" x2="130" y2="120" stroke="#9aa3b2" stroke-width="2"/><text x="136" y="125">Raw/Signal  <tspan fill="#5b6475">[current values]</tspan></text>
+          <line x1="100" y1="160" x2="130" y2="160" stroke="#9aa3b2" stroke-width="2"/><text x="136" y="165">channel_id  <tspan fill="#5b6475">[pore, sampling rate]</tspan></text>
+          <line x1="100" y1="200" x2="130" y2="200" stroke="#9aa3b2" stroke-width="2"/><text x="136" y="205">Analyses/…/Fastq</text>
+          <line x1="40" y1="270" x2="70" y2="270" stroke="#9aa3b2" stroke-width="2"/><text x="76" y="275">read_0002/ …</text>
+        </g>
+      </svg>
+    </div>
+    <div class="small">
+      <ul>
+        <li><b>fast5</b>: Nanopore's original format for the raw current (squiggles, Lecture 2.3), built on <b>HDF5</b>, a general container for big numeric data organised like folders.</li>
+        <li><b>POD5</b>: Nanopore's newer, faster raw-signal format, replacing fast5.</li>
+        <li><b>BAM</b>: binary, compressed; PacBio delivers HiFi reads as unaligned BAM. You'll meet aligned BAM/SAM in later units.</li>
+        <li>Binary files start with a “magic number”: HDF5 files begin with the bytes <code>\x89HDF</code>.</li>
+      </ul>
+    </div>
+  </div>
+  <aside class="notes">3 min. Students won't open fast5 by hand; they should know raw signal is kept so it can be re-basecalled with better models later.</aside>
+</section>
+
+<!-- 9 · Name that format game -->
+<section data-results="board">
+  <div class="kicker">Game: name that format <span class="badge game">game</span></div>
+  <h2>Which format is this?</h2>
+  <div id="fmt-game" class="panel" style="max-width:1100px;margin:0 auto"></div>
+  <aside class="notes">4 min. All snippets are real records.</aside>
+</section>
+
+<!-- 10 · Size arithmetic -->
+<section>
+  <div class="kicker">File-size arithmetic <span class="badge">interactive</span> <span class="badge math">maths</span></div>
+  <h2>How big is a FASTQ file?</h2>
+  <div class="cols">
+    <div class="widget">
+      <div class="slider-row"><span>genome size</span><input type="range" id="fs-g" min="6" max="10" step="0.05" value="9.49"><b id="fs-g-v"></b></div>
+      <div class="slider-row"><span>coverage</span><input type="range" id="fs-c" min="1" max="100" value="30"><b id="fs-c-v"></b></div>
+      <div class="slider-row"><span>read length</span><input type="range" id="fs-l" min="50" max="300" step="10" value="150"><b id="fs-l-v"></b></div>
+      <div class="stat-row">
+        <div class="stat"><b id="fs-n"></b><span>reads</span></div>
+        <div class="stat"><b id="fs-raw"></b><span>FASTQ, uncompressed</span></div>
+        <div class="stat"><b id="fs-gz"></b><span>gzip (÷ ~4)</span></div>
+      </div>
+    </div>
+    <div class="small">
+      <p>Bytes per read ≈ header (~60) + sequence (L) + “+” line (1) + quality (L) + 4 line breaks.</p>
+      $$\text{reads} = \frac{\text{coverage} \times G}{L}$$
+      <p>Human, 30×, 150 bp: 620 million reads × ~365 bytes ≈ <b>226 GB</b> uncompressed.</p>
+      <p class="tiny">Compression ratios vary (quality strings compress worse than bases); ÷4 is a rough guide.</p>
+    </div>
+  </div>
+  <aside class="notes">4 min. Ask: what fraction of a FASTQ file is quality? About half, so quality binning (e.g. NovaSeq's few quality levels) saves a lot of space.</aside>
+</section>
+
+<!-- 11 · Quiz -->
+<section>
+  <div class="kicker">Exit quiz <span class="badge game">game</span></div>
+  <h2>Four questions</h2>
+  <div class="cols">
+    <div class="panel" id="q1"></div><div class="panel" id="q2"></div>
+    <div class="panel" id="q3"></div><div class="panel" id="q4"></div>
+  </div>
+</section>
+
+<!-- 12 · Wrap-up -->
+<section>
+  <div class="kicker">Wrap-up</div>
+  <h2>Today in one slide</h2>
+  <table class="tbl" style="font-size:0.56em">
+    <tr><th>Format</th><th>Contains</th><th>Recognise it by</th></tr>
+    <tr><td>FASTA</td><td>sequence(s)</td><td><code>&gt;</code> header line</td></tr>
+    <tr><td>GenBank</td><td>sequence + annotation</td><td>LOCUS … FEATURES … ORIGIN … //</td></tr>
+    <tr><td>EMBL</td><td>sequence + annotation</td><td>two-letter codes ID, AC, DE, FT, SQ</td></tr>
+    <tr><td>XML</td><td>everything, tagged</td><td>&lt;tags&gt;…&lt;/tags&gt;</td></tr>
+    <tr><td>FASTQ</td><td>reads + per-base quality</td><td>4 lines: @, sequence, +, quality</td></tr>
+    <tr><td>fast5 / POD5</td><td>raw nanopore signal</td><td>binary (HDF5 / POD5)</td></tr>
+  </table>
+  <div class="cols" style="margin-top:0.5em">
+    <div class="panel small"><b>Notebook (Colab, R):</b> <a href="https://colab.research.google.com/github/mbsai/UACB604-Computational-Genomics/blob/main/unit02/notebooks/2.4_file_formats.ipynb" target="_blank">2.4_file_formats.ipynb</a><br>Read φX174 in four formats and real FASTQ reads with base R.</div>
+    <div class="panel small"><b>Reading:</b> Buffalo, ch. 10 · Pevsner, ch. 2<br><b>Next: Lecture 2.5</b>, finding and downloading data.</div>
+  </div>
+</section>
+
+</div></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.1.0/reveal.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.1.0/plugin/math/math.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.1.0/plugin/notes/notes.min.js"></script>
+<script src="../assets/js/live.js"></script>
+<script src="../assets/js/course.js"></script>
+<script>
+CG.initDeck();
+var $ = function (id) { return document.getElementById(id); };
+$('title-dna').innerHTML = CG.colorSeq(CG.randomSeq(70));
+
+// ---------- Size bar chart ----------
+(function () {
+  var svg = $('size-chart'), data = [['2-bit minimum', 1.3], ['FASTA', 5.5], ['GenBank', 26.2], ['EMBL', 26.2], ['XML', 71.3]];
+  data.forEach(function (d, i) {
+    var y = 10 + i * 42, w = d[1] / 71.3 * 380;
+    CG.svgText(svg, 130, y + 22, d[0], { 'text-anchor': 'end', 'font-size': 15 });
+    CG.svgEl('rect', { x: 140, y: y + 6, width: Math.max(3, w), height: 24, rx: 4, fill: i === 0 ? '#dde2ea' : '#b9acef' }, svg);
+    CG.svgText(svg, 146 + w, y + 23, d[1] + ' kB', { 'font-size': 13, fill: '#5b6475' });
+  });
+})();
+CG.mcq($('hook-q'), { id: 'hook', q: 'Why is the GenBank file almost 5× bigger than the FASTA?',
+  options: ['it stores the sequence 5 times', 'it adds annotation: genes, proteins, references', 'it is compressed differently'], answer: 1,
+  explain: 'GenBank and EMBL carry the features table (and protein translations), plus the numbered, spaced sequence.' });
+CG.mcq($('gb-q'), { id: 'gb-join', q: 'How long is the CDS join(3981..5386,1..136)?',
+  options: ['1,405 bp', '1,542 bp', '5,250 bp'], answer: 1, explain: '(5386 − 3981 + 1) + (136 − 1 + 1) = 1,406 + 136 = 1,542 = 514 codons.' });
+
+// ---------- ASCII table ----------
+(function () {
+  var cells = '';
+  [[33, '!'], [35, '#'], [43, '+'], [48, '0'], [53, '5'], [58, ':'], [63, '?'], [64, '@'], [68, 'D'], [71, 'G'], [73, 'I']].forEach(function (c) {
+    cells += '<div><b>' + c[1] + '</b>' + c[0] + ' → Q' + (c[0] - 33) + '</div>';
+  });
+  $('ascii').innerHTML = cells;
+})();
+
+// ---------- Decode game ----------
+var chars = ['!', '+', '5', '?', 'I', 'F'];
+CG.cardGame($('decode-game'), chars.map(function (ch) {
+  var q = ch.charCodeAt(0) - 33, opts = [q, q + 10, q >= 7 ? q - 7 : q + 20, q + 33].sort(function (a, b) { return a - b; });
+  return { html: '<span class="mono" style="font-size:2.4em">' + ch + '</span><br><span class="small muted">ASCII ' + ch.charCodeAt(0) + '</span>',
+           options: opts.map(function (o) { return 'Q' + o; }), answer: opts.indexOf(q),
+           explain: ch.charCodeAt(0) + ' − 33 = Q' + q + ' → error probability ' + Math.pow(10, -q / 10).toPrecision(2) };
+}), { id: 'decode', label: 'Decode quality' });
+
+// ---------- Name-that-format game ----------
+var F = ['FASTA', 'FASTQ', 'GenBank', 'EMBL', 'XML', 'fast5 (HDF5)'];
+function pre(t) { return '<pre class="file">' + t + '</pre>'; }
+CG.cardGame($('fmt-game'), [
+  { html: pre('@SRR1039508.1 HWI-ST177:290:C0TECACXX:1:1101:1225:2130/1\nCATTGCTGATACCAANNNNNNNNGCATTCCTCAAGGTCTTCC…\n+\nHJJJJJJJJJJJJJJ########00?GHIJJJJJJJIJJJJJ…'), options: F, answer: 1, explain: 'Four lines: @name, sequence, +, quality.' },
+  { html: pre('ID   J02482; SV 1; circular; genomic DNA; STD; VRL; 5386 BP.\nXX\nAC   J02482; M10348; M10379; …\nDE   Coliphage phi-X174, complete genome.'), options: F, answer: 3, explain: 'Two-letter line codes and XX spacers.' },
+  { html: pre('&gt;NC_001422.1 Escherichia phage phiX174, complete genome\nGAGTTTTATCGCTTCCATGACGCAGAAGTTAACACTTTCGGATATTTCTG…'), options: F, answer: 0, explain: '“&gt;” header, then sequence.' },
+  { html: pre('&lt;GBSeq_locus&gt;NC_001422&lt;/GBSeq_locus&gt;\n&lt;GBSeq_length&gt;5386&lt;/GBSeq_length&gt;\n&lt;GBSeq_strandedness&gt;single&lt;/GBSeq_strandedness&gt;'), options: F, answer: 4, explain: 'Named tags around every value.' },
+  { html: pre('LOCUS       NC_001422     5386 bp ss-DNA  circular PHG 11-JAN-2023\nDEFINITION  Escherichia phage phiX174, complete genome.\nACCESSION   NC_001422'), options: F, answer: 2, explain: 'LOCUS / DEFINITION / ACCESSION keywords.' },
+  { html: pre('89 48 44 46 0d 0a 1a 0a 00 00 00 00 00 08 08 00   .HDF............\n<span class="m">(the first bytes of a binary file, shown as hexadecimal)</span>'), options: F, answer: 5, explain: 'The HDF5 “magic number” \\x89HDF: a fast5 raw-signal file.' }
+], { id: 'format', label: 'Name that format' });
+
+// ---------- File-size calculator ----------
+(function () {
+  function draw() {
+    var G = Math.pow(10, +$('fs-g').value), C = +$('fs-c').value, L = +$('fs-l').value;
+    $('fs-g-v').textContent = CG.fmtNum(G) + 'b'; $('fs-c-v').textContent = C + '×'; $('fs-l-v').textContent = L + ' bp';
+    var N = C * G / L, bytes = N * (60 + 2 * L + 1 + 4);
+    $('fs-n').textContent = CG.fmtNum(N); $('fs-raw').textContent = CG.fmtNum(bytes) + 'B'; $('fs-gz').textContent = CG.fmtNum(bytes / 4) + 'B';
+  }
+  ['fs-g', 'fs-c', 'fs-l'].forEach(function (id) { $(id).addEventListener('input', draw); }); draw();
+})();
+
+// ---------- Quiz ----------
+CG.mcq($('q1'), { id: 'quiz1', q: '1. Which format stores a quality score for every base?',
+  options: ['FASTA', 'FASTQ', 'GenBank'], answer: 1, explain: 'FASTQ line 4.' });
+CG.mcq($('q2'), { id: 'quiz2', q: '2. In Phred+33, the character <code>I</code> (ASCII 73) means…',
+  options: ['Q40', 'Q73', 'Q33'], answer: 0, explain: '73 − 33 = 40.' });
+CG.mcq($('q3'), { id: 'quiz3', q: '3. In EMBL format, annotation features are on lines starting with…',
+  options: ['FT', 'FEATURES', 'AC'], answer: 0, explain: 'FT = feature table (GenBank: FEATURES).' });
+CG.mcq($('q4'), { id: 'quiz4', q: '4. Why keep raw nanopore signal (fast5/POD5) after basecalling?',
+  options: ['it is required by law', 'to re-basecall later with better models', 'it is smaller than FASTQ'], answer: 1, explain: 'Basecallers keep improving; the raw signal can be reprocessed.' });
+</script>
+</body>
+</html>

@@ -104,6 +104,70 @@
     });
   }
 
+  // ---------- Matching game ----------
+  // matchGame(el, [[left, right], ...], {id: 'prefix', label: 'Match', leftClass: 'mono'})
+  // A pair scores (in live mode) only if matched on the first try.
+  function matchGame(el, pairs, opts) {
+    opts = opts || {};
+    el.classList.add('widget');
+    el.innerHTML = '<div class="match-grid"></div><div class="feedback"></div><p class="tiny">Matched <b class="m-ok">0</b>/' + pairs.length + ' · attempts <b class="m-tries">0</b></p>';
+    var grid = el.querySelector('.match-grid'), fb = el.querySelector('.feedback');
+    var selL = null, tries = 0, ok = 0, failed = {}, left = [];
+    var order = pairs.map(function (_, i) { return i; }).sort(function () { return Math.random() - 0.5; });
+    pairs.forEach(function (p, r) {
+      var bl = document.createElement('button'); bl.innerHTML = p[0]; bl.dataset.i = r; if (opts.leftClass) bl.className = opts.leftClass;
+      var br = document.createElement('button'); br.innerHTML = pairs[order[r]][1]; br.dataset.i = order[r];
+      bl.onclick = function () { if (bl.classList.contains('done')) return; left.forEach(function (b) { b.classList.remove('chosen'); }); bl.classList.add('chosen'); selL = bl; };
+      br.onclick = function () {
+        if (!selL || br.classList.contains('done')) return;
+        tries++; el.querySelector('.m-tries').textContent = tries;
+        if (selL.dataset.i === br.dataset.i) {
+          report(el, (opts.id || 'match') + '-' + selL.dataset.i, (opts.label || 'Match') + ': ' + stripTags(selL.innerHTML), !failed[selL.dataset.i], stripTags(br.innerHTML));
+          selL.classList.remove('chosen'); selL.classList.add('done'); br.classList.add('done'); ok++; el.querySelector('.m-ok').textContent = ok;
+          fb.className = 'feedback ok'; fb.textContent = ok === pairs.length ? '🎉 All matched in ' + tries + ' attempts!' : '✓ Matched.'; selL = null;
+        } else {
+          failed[selL.dataset.i] = true; br.classList.add('wrong'); setTimeout(function () { br.classList.remove('wrong'); }, 600);
+          fb.className = 'feedback no'; fb.textContent = '✗ Try again.';
+        }
+      };
+      left.push(bl); grid.appendChild(bl); grid.appendChild(br);
+    });
+  }
+
+  // ---------- Flash-card quiz ----------
+  // cardGame(el, [{html, options: [...], answer: i or [i, j], explain}], {id: 'prefix', label: 'Cards', shuffle: false})
+  // One answer per card (first answer counts); "Next" moves on.
+  function cardGame(el, cards, opts) {
+    opts = opts || {};
+    el.classList.add('widget');
+    el.innerHTML = '<p class="tiny" style="text-align:center;margin:0">Card <span class="c-i">1</span> of ' + cards.length + ' · score <b class="c-s">0</b></p>' +
+      '<div class="c-card" style="text-align:center;margin:0.3em 0"></div><div class="c-opts" style="text-align:center"></div>' +
+      '<div class="feedback" style="text-align:center"></div><p style="text-align:center;margin:0.2em 0 0"><button class="primary c-next">Next →</button></p>';
+    var i = 0, score = 0, answered = false, fb = el.querySelector('.feedback');
+    function isRight(c, k) { return Array.isArray(c.answer) ? c.answer.indexOf(k) >= 0 : c.answer === k; }
+    function show() {
+      var c = cards[i]; answered = false; fb.textContent = '';
+      el.querySelector('.c-i').textContent = i + 1; el.querySelector('.c-card').innerHTML = c.html;
+      var box = el.querySelector('.c-opts'); box.innerHTML = '';
+      c.options.forEach(function (o, k) {
+        var b = document.createElement('button'); b.innerHTML = o;
+        b.onclick = function () {
+          if (answered) return; answered = true;
+          var good = isRight(c, k); if (good) score++; el.querySelector('.c-s').textContent = score;
+          box.querySelectorAll('button').forEach(function (x, j) { if (isRight(c, j)) x.classList.add('right'); });
+          if (!good) b.classList.add('wrong');
+          fb.className = 'feedback ' + (good ? 'ok' : 'no'); fb.innerHTML = (good ? '✓ ' : '✗ ') + (c.explain || '');
+          report(el, (opts.id || 'card') + '-' + i, (opts.label || 'Card') + ' ' + (i + 1) + ': ' + stripTags(c.html).slice(0, 60), good, stripTags(o));
+        };
+        box.appendChild(b);
+      });
+    }
+    el.querySelector('.c-next').onclick = function () {
+      if (i < cards.length - 1) { i++; show(); } else { fb.className = 'feedback ok'; fb.textContent = 'Done! You scored ' + score + '/' + cards.length + '.'; }
+    };
+    show();
+  }
+
   // ---------- Live-class helpers ----------
   function live() { return !!(global.Live && global.Live.isStudent); }
   function report(el, qid, label, correct, answer) { if (global.Live) global.Live.report(el, qid, label, correct, answer); }
@@ -126,6 +190,6 @@
   global.CG = {
     initDeck: initDeck, clean: clean, revcomp: revcomp, counts: counts, randomSeq: randomSeq,
     colorSeq: colorSeq, fmtNum: fmtNum, mcq: mcq, svgEl: svgEl, svgText: svgText,
-    live: live, report: report,
+    live: live, report: report, matchGame: matchGame, cardGame: cardGame,
   };
 })(window);

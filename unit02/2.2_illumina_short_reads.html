@@ -1,0 +1,367 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>2.2 Illumina Short Reads</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.1.0/reveal.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.1.0/theme/white.min.css">
+<link rel="stylesheet" href="../assets/css/course.css">
+<style>
+  .steps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5em; }
+  .steps .panel { font-size: 0.55em; }
+  .steps h3 { font-size: 1.35em; margin: 0.2em 0; color: var(--ink); }
+  .steps svg { width: 100%; height: auto; }
+  #fq-in { font-size: 0.85em !important; }
+</style>
+</head>
+<body>
+<div class="reveal"><div class="slides">
+
+<!-- 1 · Title -->
+<section class="title-slide center">
+  <div class="course">UACB-604 · Computational Genomics · Lecture 2.2</div>
+  <h1>Illumina: millions of<br>short reads at once</h1>
+  <div class="dna-strip" id="title-dna"></div>
+  <p class="muted small">Sequencing by synthesis · base calling · quality · paired ends</p>
+  <aside class="notes">45 min. Maths today: throughput arithmetic, exponential decay (phasing), log quality scores, expected errors, overlap arithmetic for pairs.</aside>
+</section>
+
+<!-- 2 · Hook -->
+<section>
+  <div class="kicker">Warm-up <span class="badge">interactive</span> <span class="badge math">maths</span></div>
+  <h2>How much sequencing is one human genome?</h2>
+  <div class="cols">
+    <div>
+      <p>Clinical whole-genome sequencing aims for <b>30× coverage</b>: every base read about 30 times on average.</p>
+      <div class="panel" id="hook-q"></div>
+    </div>
+    <div class="panel small">
+      <h3>The key formula (more in Unit 5)</h3>
+      $$\text{coverage } C = \frac{N \times L}{G}$$
+      <p>\(N\) reads of length \(L\) on a genome of size \(G\).</p>
+      <p>Sanger: ~1,000 bases per reaction. To reach 93 billion bases you need massive <b>parallelism</b>: billions of reactions side by side on a glass slide.</p>
+    </div>
+  </div>
+  <aside class="notes">3 min. 3.1 × 10⁹ × 30 = 9.3 × 10¹⁰ = 93 Gb. With 150 bp reads that is 620 million reads.</aside>
+</section>
+
+<!-- 3 · How it works -->
+<section>
+  <div class="kicker">How it works <span class="badge bio">biology</span></div>
+  <h2>Sequencing by synthesis in four steps</h2>
+  <div class="steps">
+    <div class="panel">
+      <svg viewBox="0 0 160 80"><line x1="10" y1="40" x2="150" y2="40" stroke="#2f6fd6" stroke-width="5"/><rect x="10" y="34" width="16" height="12" fill="#e0a100"/><rect x="134" y="34" width="16" height="12" fill="#e0a100"/>
+        <line x1="10" y1="62" x2="90" y2="62" stroke="#2f6fd6" stroke-width="5"/><rect x="10" y="56" width="16" height="12" fill="#e0a100"/><rect x="74" y="56" width="16" height="12" fill="#e0a100"/></svg>
+      <h3>1 · Library</h3>Cut DNA into fragments (a few hundred bp); attach <b>adapters</b> to both ends.
+    </div>
+    <div class="panel">
+      <svg viewBox="0 0 160 80"><rect x="5" y="66" width="150" height="8" fill="#9aa3b2"/>
+        <g stroke="#2f6fd6" stroke-width="3" fill="none"><path d="M30 66 q 10 -50 20 0"/><path d="M45 66 q 10 -50 20 0"/><path d="M60 66 q 10 -50 20 0"/></g>
+        <g fill="#6b4fd8"><circle cx="110" cy="40" r="5"/><circle cx="122" cy="36" r="5"/><circle cx="116" cy="50" r="5"/><circle cx="128" cy="48" r="5"/><circle cx="105" cy="52" r="5"/></g></svg>
+      <h3>2 · Clusters</h3>Fragments bind to a flow cell and are copied in place (<b>bridge amplification</b>) into clusters of ~1,000 identical copies.
+    </div>
+    <div class="panel">
+      <svg viewBox="0 0 160 80"><g font-family="JetBrains Mono" font-size="16" font-weight="700"><text x="10" y="30" fill="#2e9e5b">A</text><text x="40" y="30" fill="#2f6fd6">C</text><text x="70" y="30" fill="#1d2433">G</text><text x="100" y="30" fill="#d64545">T</text></g>
+        <g fill="#e0a100"><circle cx="16" cy="55" r="7"/><circle cx="46" cy="55" r="7"/><circle cx="76" cy="55" r="7"/><circle cx="106" cy="55" r="7"/></g><text x="125" y="60" font-size="12" fill="#5b6475">STOP</text></g></svg>
+      <h3>3 · One base per cycle</h3>Add fluorescent nucleotides with a removable <b>terminator</b>: each strand grows by exactly one base, then pauses.
+    </div>
+    <div class="panel">
+      <svg viewBox="0 0 160 80"><rect x="10" y="10" width="140" height="60" rx="6" fill="#1d2433"/>
+        <g><circle cx="35" cy="30" r="6" fill="#2e9e5b"/><circle cx="70" cy="45" r="6" fill="#d64545"/><circle cx="110" cy="28" r="6" fill="#2f6fd6"/><circle cx="125" cy="55" r="6" fill="#e0a100"/><circle cx="50" cy="58" r="6" fill="#2f6fd6"/></g></svg>
+      <h3>4 · Image, cleave, repeat</h3>A camera records each cluster's colour; dye and terminator are removed; repeat for 50–300 cycles.
+    </div>
+  </div>
+  <p class="small" style="margin-top:0.5em">Hundreds of millions to billions of clusters are read <b>in parallel</b>. Newer instruments use two dyes instead of four (e.g. a base is read as “both”, “red only”, “green only” or “dark”).</p>
+  <aside class="notes">5 min. Your home ground. Key idea for the maths: every cluster is ~1,000 copies that must stay in step.</aside>
+</section>
+
+<!-- 4 · Base-calling game -->
+<section data-results="board">
+  <div class="kicker">Game: call the base <span class="badge game">game</span></div>
+  <h2>You are the base caller</h2>
+  <div class="cols w60">
+    <div class="widget">
+      <p style="margin-top:0">Cycle <b id="bc-cycle"></b> · round <b id="bc-round">1</b> of 6 · the previous base was <b id="bc-prev"></b></p>
+      <svg id="bc-chart" viewBox="0 0 620 260" width="100%"></svg>
+      <p id="bc-opts" style="text-align:center"></p>
+      <div class="feedback" id="bc-fb" style="text-align:center"></div>
+      <p style="text-align:center"><button id="bc-next" class="primary">Next cycle →</button></p>
+    </div>
+    <div class="small">
+      <p>The bars show the light from one cluster in the four colour channels.</p>
+      <p>Early cycles: one channel clearly wins. Later, some copies in the cluster have <b>fallen behind</b> and still show the previous base, so two channels compete.</p>
+      <p class="muted">Hint: the previous base's colour is the most likely impostor.</p>
+    </div>
+  </div>
+  <aside class="notes">6 min. Six rounds at cycles 5, 30, 60, 90, 120, 150. Accuracy should drop for the class too — that is exactly the quality curve.</aside>
+</section>
+
+<!-- 5 · Phasing maths -->
+<section>
+  <div class="kicker">Why quality drops <span class="badge">interactive</span> <span class="badge math">maths</span></div>
+  <h2>Phasing: losing step, cycle by cycle</h2>
+  <div class="cols w60">
+    <div class="widget">
+      chance a copy falls behind each cycle: \(\varepsilon\) = <b id="ph-e-v"></b>
+      <input type="range" id="ph-e" min="0.001" max="0.01" step="0.0005" value="0.005">
+      <svg id="ph-chart" viewBox="0 0 620 280" width="100%"></svg>
+    </div>
+    <div class="small">
+      <p>Each copy in a cluster stays in step with probability \(1-\varepsilon\) per cycle (AND rule), so after \(n\) cycles:</p>
+      $$\text{in step} = (1-\varepsilon)^n$$
+      <p>Half the cluster is out of step when \((1-\varepsilon)^n = \tfrac12\):</p>
+      $$n_{1/2} = \frac{\ln \tfrac12}{\ln(1-\varepsilon)} \approx \frac{0.693}{\varepsilon}$$
+      <div class="panel" id="ph-q"></div>
+    </div>
+  </div>
+  <aside class="notes">5 min. Same maths as radioactive half-life. This is one reason Illumina reads are 50–300 bases, not thousands.</aside>
+</section>
+
+<!-- 6 · FASTQ decoder -->
+<section>
+  <div class="kicker">The output <span class="badge">interactive</span></div>
+  <h2>A real FASTQ record, decoded</h2>
+  <pre class="file">@SRR1039508.1 HWI-ST177:290:C0TECACXX:1:1101:1225:2130/1
+CATTGCTGATACCAANNNNNNNNGCATTCCTCAAGGTCTTCCTCCTTCCCTTACGGAATTACA
++
+HJJJJJJJJJJJJJJ########00?GHIJJJJJJJIJJJJJJJJJJJJJJJJJHHHFFFFFD</pre>
+  <div class="cols w60">
+    <div class="widget">
+      quality line (edit me): <input type="text" id="fq-in" class="mono" value="HJJJJJJJJJJJJJJ########00?GHIJJJJJJJIJJJJJJJJJJJJJJJJJHHHFFFFFD">
+      <svg id="fq-chart" viewBox="0 0 640 170" width="100%"></svg>
+    </div>
+    <div class="small">
+      <p>Each character's ASCII code − 33 = Phred Q. <span class="mono">J</span> = 74 → Q41; <span class="mono">#</span> = 35 → Q2.</p>
+      <p>The 8 <b>N</b>s (no call) have Q2: the machine says “I don't know”.</p>
+      <div class="stat-row"><div class="stat"><b id="fq-ee"></b><span>expected errors \(\sum 10^{-Q/10}\)</span></div><div class="stat"><b id="fq-mq"></b><span>mean Q</span></div></div>
+      <p class="tiny">Read 1 of run SRR1039508 (HiSeq 2000, human airway RNA-seq). More in Lecture 2.4.</p>
+    </div>
+  </div>
+  <aside class="notes">4 min. Expected errors: the 8 Ns contribute 8 × 0.63 = 5.0 of the total. A typical filter discards reads with EE > 1.</aside>
+</section>
+
+<!-- 7 · Paired ends -->
+<section>
+  <div class="kicker">Two reads per fragment <span class="badge">interactive</span> <span class="badge math">maths</span></div>
+  <h2>Paired-end reads</h2>
+  <div class="cols w60">
+    <div class="widget">
+      <div class="slider-row"><span>fragment length</span><input type="range" id="pe-f" min="100" max="800" step="10" value="350"><b id="pe-f-v"></b></div>
+      <div class="slider-row"><span>read length</span><input type="range" id="pe-r" min="50" max="300" step="10" value="150"><b id="pe-r-v"></b></div>
+      <svg id="pe-chart" viewBox="0 0 640 150" width="100%"></svg>
+      <div class="feedback" id="pe-fb"></div>
+    </div>
+    <div class="small">
+      <p>Read 1 from one end, read 2 from the other (pointing inward). We know roughly how far apart they are.</p>
+      <p>Overlap \(= 2L - F\) when positive; otherwise an unread gap of \(F - 2L\).</p>
+      <p><b>Why pairs help:</b> if read 1 falls in a repeat, read 2 often lands in unique sequence and anchors it; unusual distances between mates reveal deletions and rearrangements.</p>
+    </div>
+  </div>
+  <aside class="notes">4 min. Try F = 250, L = 150: overlap 50 bp, so the pair can be merged into one 250 bp read.</aside>
+</section>
+
+<!-- 8 · Throughput calculator -->
+<section>
+  <div class="kicker">Planning an experiment <span class="badge">interactive</span> <span class="badge math">maths</span></div>
+  <h2>How many reads do I need?</h2>
+  <div class="cols">
+    <div class="widget">
+      <div class="slider-row"><span>reads (millions)</span><input type="range" id="tp-n" min="1" max="1000" value="100"><b id="tp-n-v"></b></div>
+      <div class="slider-row"><span>read length</span><input type="range" id="tp-l" min="50" max="300" step="25" value="150"><b id="tp-l-v"></b></div>
+      <p>paired-end? <button id="tp-pe" class="chosen">yes, 2 reads per fragment</button></p>
+      <p>Genome: <button data-g="4.64e6">E. coli</button><button data-g="1.2e7">yeast</button><button data-g="3.1e9" class="chosen">human</button></p>
+      <div class="stat-row"><div class="stat"><b id="tp-bases"></b><span>bases sequenced</span></div><div class="stat"><b id="tp-cov"></b><span>coverage</span></div></div>
+    </div>
+    <div class="small">
+      <h3>Illumina in numbers (typical)</h3>
+      <ul>
+        <li>Reads 50–300 bases; often 2 × 150</li>
+        <li>Errors mostly <b>substitutions</b>, ~0.1–1% per base, rising along the read</li>
+        <li>From millions of reads (MiSeq) to billions (NovaSeq-class) per run</li>
+        <li>Cheapest per base of all methods: the workhorse for RNA-seq, exomes, resequencing</li>
+      </ul>
+    </div>
+  </div>
+  <aside class="notes">4 min. Ask: how many E. coli genomes at 100× fit in 100 M paired 150 bp reads? 3 × 10¹⁰ / (4.64 × 10⁸) ≈ 65 → multiplexing many samples with index barcodes.</aside>
+</section>
+
+<!-- 9 · Quiz -->
+<section>
+  <div class="kicker">Exit quiz <span class="badge game">game</span></div>
+  <h2>Four questions</h2>
+  <div class="cols">
+    <div class="panel" id="q1"></div><div class="panel" id="q2"></div>
+    <div class="panel" id="q3"></div><div class="panel" id="q4"></div>
+  </div>
+</section>
+
+<!-- 10 · Wrap-up -->
+<section>
+  <div class="kicker">Wrap-up</div>
+  <h2>Today in one slide</h2>
+  <ul>
+    <li>Illumina reads millions of clusters in parallel, one base per cycle.</li>
+    <li>Phasing: the in-step fraction decays as \((1-\varepsilon)^n\) → quality drops along the read.</li>
+    <li>FASTQ stores a Phred score per base as one character (ASCII − 33).</li>
+    <li>Expected errors per read \(=\sum 10^{-Q/10}\); coverage \(= NL/G\).</li>
+    <li>Paired ends: overlap \(2L - F\); pairs anchor repeats and reveal rearrangements.</li>
+  </ul>
+  <div class="cols" style="margin-top:0.6em">
+    <div class="panel small"><b>Notebook (Colab, Python):</b> <a href="https://colab.research.google.com/github/mbsai/UACB604-Computational-Genomics/blob/main/unit02/notebooks/2.2_illumina_fastq.ipynb" target="_blank">2.2_illumina_fastq.ipynb</a><br>Stream 20,000 real read pairs; plot quality along the read; expected errors; check pairs.</div>
+    <div class="panel small"><b>Reading:</b> Pevsner, ch. 9 · Buffalo, ch. 10<br><b>Next: Lecture 2.3</b>, long and linked reads.</div>
+  </div>
+</section>
+
+</div></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.1.0/reveal.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.1.0/plugin/math/math.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.1.0/plugin/notes/notes.min.js"></script>
+<script src="../assets/js/live.js"></script>
+<script src="../assets/js/course.js"></script>
+<script>
+CG.initDeck();
+var $ = function (id) { return document.getElementById(id); };
+$('title-dna').innerHTML = CG.colorSeq(CG.randomSeq(70));
+var COLOR = { A: '#2e9e5b', C: '#2f6fd6', G: '#1d2433', T: '#d64545' };
+
+CG.mcq($('hook-q'), { id: 'hook', q: 'How many bases must be sequenced for one human genome (3.1 Gb) at 30×?',
+  options: ['9.3 million', '93 billion', '9.3 trillion'], answer: 1, explain: '3.1 × 10<sup>9</sup> × 30 = 9.3 × 10<sup>10</sup> = 93 Gb.' });
+
+// ---------- Base-calling game ----------
+(function () {
+  var cycles = [5, 30, 60, 90, 120, 150], eps = 0.006, round = 0, answered = false, truth, prev, svg = $('bc-chart');
+  function newRound() {
+    if (round >= cycles.length) { $('bc-fb').className = 'feedback ok'; $('bc-fb').textContent = 'All 6 cycles done!' + (CG.live() ? ' Wait for the results.' : ''); return; }
+    var c = cycles[round]; round++; answered = false;
+    $('bc-cycle').textContent = c; $('bc-round').textContent = round; $('bc-fb').textContent = '';
+    var bases = 'ACGT';
+    prev = bases[Math.floor(Math.random() * 4)];
+    do { truth = bases[Math.floor(Math.random() * 4)]; } while (truth === prev);
+    var next = bases[Math.floor(Math.random() * 4)];
+    $('bc-prev').innerHTML = '<span style="color:' + COLOR[prev] + '">' + prev + '</span>';
+    var inStep = Math.pow(1 - eps, c), behind = (1 - inStep) * 0.75, ahead = (1 - inStep) * 0.25;
+    var sig = { A: 0, C: 0, G: 0, T: 0 };
+    sig[truth] += inStep; sig[prev] += behind; sig[next] += ahead;
+    bases.split('').forEach(function (b) { sig[b] = Math.max(0.02, sig[b] + (Math.random() - 0.5) * (0.06 + c / 900)); });
+    while (svg.firstChild) svg.removeChild(svg.firstChild);
+    var x0 = 60, y0 = 220, h = 190, mx = Math.max(sig.A, sig.C, sig.G, sig.T);
+    bases.split('').forEach(function (b, i) {
+      var bh = sig[b] / mx * h, x = x0 + i * 140;
+      CG.svgEl('rect', { x: x, y: y0 - bh, width: 90, height: bh, rx: 6, fill: COLOR[b] }, svg);
+      CG.svgText(svg, x + 45, y0 + 26, b, { 'text-anchor': 'middle', 'font-size': 22, 'font-weight': 700, fill: COLOR[b] });
+    });
+    var box = $('bc-opts'); box.innerHTML = '';
+    bases.split('').forEach(function (b) {
+      var btn = document.createElement('button'); btn.textContent = b; btn.style.color = COLOR[b]; btn.style.fontSize = '1.2em'; btn.style.minWidth = '3em';
+      btn.onclick = function () {
+        if (answered) return; answered = true;
+        var ok = b === truth; btn.className = ok ? 'right' : 'wrong'; if (ok) btn.style.color = '#fff';
+        $('bc-fb').className = 'feedback ' + (ok ? 'ok' : 'no');
+        $('bc-fb').innerHTML = (ok ? '✓ ' : '✗ ') + 'True base: <b style="color:' + COLOR[truth] + '">' + truth + '</b> · ' + Math.round(inStep * 100) + '% of the cluster still in step';
+        CG.report(svg, 'call-' + c, 'Call the base, cycle ' + c, ok, b);
+      };
+      box.appendChild(btn);
+    });
+  }
+  $('bc-next').onclick = newRound; newRound();
+})();
+
+// ---------- Phasing chart ----------
+(function () {
+  var svg = $('ph-chart');
+  function draw() {
+    var e = +$('ph-e').value; $('ph-e-v').textContent = e.toFixed(4).replace(/0+$/, '');
+    while (svg.firstChild) svg.removeChild(svg.firstChild);
+    var x0 = 50, x1 = 610, y0 = 240, y1 = 15, N = 300;
+    function X(n) { return x0 + n / N * (x1 - x0); } function Y(v) { return y0 - v * (y0 - y1); }
+    CG.svgEl('line', { x1: x0, x2: x1, y1: y0, y2: y0, stroke: '#5b6475' }, svg);
+    CG.svgEl('line', { x1: x0, x2: x1, y1: Y(0.5), y2: Y(0.5), stroke: '#dde2ea', 'stroke-dasharray': '5 4' }, svg);
+    CG.svgText(svg, x0 - 6, Y(0.5) + 4, '½', { 'text-anchor': 'end', 'font-size': 14, fill: '#5b6475' });
+    CG.svgText(svg, x0 - 6, Y(1) + 4, '1', { 'text-anchor': 'end', 'font-size': 14, fill: '#5b6475' });
+    var d = ''; for (var n = 0; n <= N; n += 3) d += (n ? 'L' : 'M') + X(n) + ' ' + Y(Math.pow(1 - e, n));
+    CG.svgEl('path', { d: d, fill: 'none', stroke: '#6b4fd8', 'stroke-width': 3 }, svg);
+    var half = Math.log(0.5) / Math.log(1 - e);
+    if (half <= N) { CG.svgEl('line', { x1: X(half), x2: X(half), y1: Y(0.5), y2: y0, stroke: '#d64545', 'stroke-dasharray': '5 4' }, svg);
+      CG.svgText(svg, X(half) + 6, Y(0.5) - 8, 'half at cycle ' + Math.round(half), { fill: '#d64545', 'font-size': 14, 'font-weight': 700 }); }
+    [0, 50, 100, 150, 200, 250, 300].forEach(function (v) { CG.svgText(svg, X(v), y0 + 18, v, { 'text-anchor': 'middle', 'font-size': 12, fill: '#5b6475' }); });
+    CG.svgText(svg, (x0 + x1) / 2, y0 + 36, 'cycle (= position in read)', { 'text-anchor': 'middle', 'font-size': 14 });
+  }
+  $('ph-e').addEventListener('input', draw); draw();
+})();
+CG.mcq($('ph-q'), { id: 'half-life', q: 'With ε = 0.005, half the cluster is out of step after about…',
+  options: ['14 cycles', '139 cycles', '1,386 cycles'], answer: 1, explain: '0.693 / 0.005 ≈ 139.' });
+
+// ---------- FASTQ decoder ----------
+(function () {
+  var svg = $('fq-chart');
+  function draw() {
+    var q = $('fq-in').value, Q = [];
+    for (var i = 0; i < q.length; i++) Q.push(q.charCodeAt(i) - 33);
+    while (svg.firstChild) svg.removeChild(svg.firstChild);
+    var x0 = 30, x1 = 630, y0 = 140, h = 120, n = Math.max(Q.length, 1), w = (x1 - x0) / n;
+    CG.svgEl('line', { x1: x0, x2: x1, y1: y0 - 30 / 42 * h, y2: y0 - 30 / 42 * h, stroke: '#d64545', 'stroke-dasharray': '4 4' }, svg);
+    CG.svgText(svg, x0 - 4, y0 - 30 / 42 * h + 4, '30', { 'text-anchor': 'end', 'font-size': 11, fill: '#d64545' });
+    Q.forEach(function (v, i) {
+      var bh = Math.max(0, Math.min(42, v)) / 42 * h;
+      CG.svgEl('rect', { x: x0 + i * w + 0.5, y: y0 - bh, width: Math.max(1, w - 1), height: bh, fill: v >= 30 ? '#6b4fd8' : v >= 20 ? '#e0a100' : '#d64545' }, svg);
+    });
+    CG.svgText(svg, x0, y0 + 20, 'position 1', { 'font-size': 12, fill: '#5b6475' });
+    CG.svgText(svg, x1, y0 + 20, 'position ' + Q.length, { 'font-size': 12, fill: '#5b6475', 'text-anchor': 'end' });
+    var ee = Q.reduce(function (a, v) { return a + Math.pow(10, -v / 10); }, 0);
+    $('fq-ee').textContent = ee.toFixed(2);
+    $('fq-mq').textContent = Q.length ? (Q.reduce(function (a, b) { return a + b; }, 0) / Q.length).toFixed(1) : '–';
+  }
+  $('fq-in').addEventListener('input', draw); draw();
+})();
+
+// ---------- Paired ends ----------
+(function () {
+  var svg = $('pe-chart');
+  function draw() {
+    var F = +$('pe-f').value, L = +$('pe-r').value; $('pe-f-v').textContent = F + ' bp'; $('pe-r-v').textContent = L + ' bp';
+    while (svg.firstChild) svg.removeChild(svg.firstChild);
+    var x0 = 20, scale = 600 / 800;
+    CG.svgEl('rect', { x: x0, y: 70, width: F * scale, height: 14, rx: 4, fill: '#dde2ea' }, svg);
+    CG.svgText(svg, x0, 106, 'fragment ' + F + ' bp', { 'font-size': 13, fill: '#5b6475' });
+    var r1 = Math.min(L, F), r2 = Math.min(L, F);
+    CG.svgEl('rect', { x: x0, y: 30, width: r1 * scale, height: 14, rx: 4, fill: '#6b4fd8' }, svg);
+    CG.svgText(svg, x0 + r1 * scale + 6, 42, 'read 1 →', { 'font-size': 13, fill: '#6b4fd8' });
+    CG.svgEl('rect', { x: x0 + (F - r2) * scale, y: 50, width: r2 * scale, height: 14, rx: 4, fill: '#e0a100' }, svg);
+    CG.svgText(svg, x0 + (F - r2) * scale - 6, 62, '← read 2', { 'font-size': 13, fill: '#b37f00', 'text-anchor': 'end' });
+    var ov = 2 * L - F;
+    $('pe-fb').className = 'feedback ' + (ov > 0 ? 'ok' : '');
+    $('pe-fb').textContent = ov > 0 ? (L >= F ? 'Each read covers the whole fragment: reads run into the adapter at the far end.' : 'Overlap of ' + ov + ' bp: the pair can be merged into one ' + F + ' bp sequence.')
+                                    : 'Gap of ' + (-ov) + ' bp between the reads: known distance, unknown sequence.';
+  }
+  $('pe-f').addEventListener('input', draw); $('pe-r').addEventListener('input', draw); draw();
+})();
+
+// ---------- Throughput ----------
+(function () {
+  var G = 3.1e9, pe = true;
+  function draw() {
+    var N = +$('tp-n').value * 1e6, L = +$('tp-l').value;
+    $('tp-n-v').textContent = (+$('tp-n').value) + ' M'; $('tp-l-v').textContent = L + ' bp';
+    var bases = N * L * (pe ? 2 : 1);
+    $('tp-bases').textContent = CG.fmtNum(bases) + 'b'; $('tp-cov').textContent = CG.fmtNum(bases / G) + '×';
+  }
+  $('tp-pe').onclick = function () { pe = !pe; $('tp-pe').classList.toggle('chosen', pe); $('tp-pe').textContent = pe ? 'yes, 2 reads per fragment' : 'no, single reads'; draw(); };
+  document.querySelectorAll('[data-g]').forEach(function (b) { b.onclick = function () { document.querySelectorAll('[data-g]').forEach(function (x) { x.classList.remove('chosen'); }); b.classList.add('chosen'); G = +b.dataset.g; draw(); }; });
+  $('tp-n').addEventListener('input', draw); $('tp-l').addEventListener('input', draw); draw();
+})();
+
+// ---------- Quiz ----------
+CG.mcq($('q1'), { id: 'quiz1', q: '1. The quality character <span class="mono">?</span> (ASCII 63) encodes…',
+  options: ['Q20', 'Q30', 'Q63'], answer: 1, explain: '63 − 33 = 30.' });
+CG.mcq($('q2'), { id: 'quiz2', q: '2. The main cause of quality dropping along an Illumina read is…',
+  options: ['copies in a cluster falling out of step', 'the DNA breaking', 'the dye fading in storage'], answer: 0, explain: 'Phasing / pre-phasing.' });
+CG.mcq($('q3'), { id: 'quiz3', q: '3. A read has 100 bases at Q30. Expected errors ≈',
+  options: ['0.1', '1', '30'], answer: 0, explain: '100 × 0.001 = 0.1.' });
+CG.mcq($('q4'), { id: 'quiz4', q: '4. Fragment 300 bp, reads 2 × 150 bp. The reads…',
+  options: ['overlap by 150 bp', 'just meet, no overlap or gap', 'leave a 150 bp gap'], answer: 1, explain: '2 × 150 − 300 = 0.' });
+</script>
+</body>
+</html>

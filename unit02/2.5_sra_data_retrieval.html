@@ -1,0 +1,285 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>2.5 Finding and Downloading Data</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.1.0/reveal.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.1.0/theme/white.min.css">
+<link rel="stylesheet" href="../assets/css/course.css">
+<style>
+  .c-card { font-size: 1.05em; font-weight: 700; min-height: 2.2em; }
+  .c-opts button { font-family: var(--r-code-font); font-size: 0.85em; }
+  #hash-in { font-family: var(--r-code-font); }
+  .fz { font-family: 'Inter', sans-serif; font-size: 13px; }
+</style>
+</head>
+<body>
+<div class="reveal"><div class="slides">
+
+<!-- 1 · Title -->
+<section class="title-slide center">
+  <div class="course">UACB-604 · Computational Genomics · Lecture 2.5</div>
+  <h1>Finding and downloading<br>sequencing data</h1>
+  <div class="dna-strip" id="title-dna"></div>
+  <p class="muted small">SRA · BioProject · accessions · wget · FTP / FileZilla · checksums</p>
+  <aside class="notes">45 min. Last lecture of Unit 2. Students need laptops; the notebook does real downloads in Colab.</aside>
+</section>
+
+<!-- 2 · Accession ladder game -->
+<section data-results="board">
+  <div class="kicker">Warm-up <span class="badge game">game</span></div>
+  <h2>Climb the accession ladder</h2>
+  <p class="small muted" style="margin-top:0">All real accessions. Click an accession, then what it identifies.</p>
+  <div id="ladder"></div>
+  <aside class="notes">4 min. First-try matches score.</aside>
+</section>
+
+<!-- 3 · Ladder diagram -->
+<section>
+  <div class="kicker">How raw data are organised <span class="badge bio">biology</span></div>
+  <h2>From a study to its FASTQ files</h2>
+  <div class="cols w60">
+    <svg viewBox="0 0 640 360" width="100%">
+      <g font-size="15">
+        <rect x="10" y="10" width="620" height="60" rx="10" fill="#e3dcff"/><text x="24" y="36" font-weight="700">BioProject  PRJNA229998</text><text x="24" y="58" fill="#5b6475" font-size="12.5">“Human airway smooth muscle transcriptome changes in response to asthma medications”</text>
+        <rect x="40" y="90" width="590" height="56" rx="10" fill="#e3f1ff"/><text x="54" y="114" font-weight="700">BioSample  SAMN02422669</text><text x="54" y="136" fill="#5b6475">one donor's cells, one treatment (16 samples in this project)</text>
+        <rect x="70" y="166" width="560" height="56" rx="10" fill="#e3f6ea"/><text x="84" y="190" font-weight="700">Experiment  SRX384345</text><text x="84" y="212" fill="#5b6475">the sequencing library: RNA-seq, paired-end, Illumina HiSeq 2000</text>
+        <rect x="100" y="242" width="530" height="56" rx="10" fill="#fff4d6"/><text x="114" y="266" font-weight="700">Run  SRR1039508</text><text x="114" y="288" fill="#5b6475">22.9 million read pairs → 2 FASTQ files, 2.47 GB gzipped</text>
+        <text x="320" y="335" text-anchor="middle" fill="#5b6475">NCBI SRA · EBI ENA · DDBJ DRA mirror each other (prefixes SRR / ERR / DRR)</text>
+      </g>
+    </svg>
+    <div class="small">
+      <ul>
+        <li>Journals require raw reads to be deposited, so published data are (usually) public.</li>
+        <li><b>Metadata</b> (who, what, how) lives at each level; the <b>data</b> (reads) belong to runs.</li>
+        <li>Search by BioProject to find every run of a study; download by run.</li>
+        <li>NCBI's <b>SRA Run Selector</b> and ENA's project pages list runs with links.</li>
+      </ul>
+    </div>
+  </div>
+  <aside class="notes">4 min. This is the RNA-seq study whose reads they decoded in Lecture 2.2.</aside>
+</section>
+
+<!-- 4 · Ways to download -->
+<section>
+  <div class="kicker">Tools <span class="badge bio">practice</span></div>
+  <h2>Four ways to get the files</h2>
+  <table class="tbl" style="font-size:0.56em">
+    <tr><th>Tool</th><th>What it is</th><th>Example</th></tr>
+    <tr><td><b>Browser</b></td><td>click a link on ENA / SRA</td><td>fine for one small file</td></tr>
+    <tr><td><b>wget / curl</b></td><td>command-line downloaders on every Linux/Mac; scriptable</td><td class="mono">wget https://ftp.sra.ebi.ac.uk/vol1/fastq/SRR411/026/SRR41113426/SRR41113426_1.fastq.gz<br>curl -O https://…/SRR41113426_1.fastq.gz</td></tr>
+    <tr><td><b>FTP client (FileZilla)</b></td><td>graphical program to browse and copy files from FTP/SFTP servers</td><td class="mono">host ftp.sra.ebi.ac.uk · user anonymous · folder /vol1/fastq/…</td></tr>
+    <tr><td><b>SRA Toolkit</b></td><td>NCBI's tools: fetch a run, convert to FASTQ</td><td class="mono">prefetch SRR1039508<br>fasterq-dump --split-files SRR1039508</td></tr>
+  </table>
+  <p class="small">ENA also answers “where are the files?” as data: <span class="mono" style="font-size:0.8em">https://www.ebi.ac.uk/ena/portal/api/filereport?accession=SRR1039508&amp;result=read_run&amp;fields=fastq_ftp,fastq_md5,fastq_bytes</span> (used in the notebook).</p>
+  <p class="tiny">For very large transfers, research networks use faster protocols (e.g. Aspera, Globus).</p>
+  <aside class="notes">4 min. FTP = File Transfer Protocol, one of the oldest internet services; ENA's FTP server allows anonymous login.</aside>
+</section>
+
+<!-- 5 · Command game -->
+<section data-results="board">
+  <div class="kicker">Game: which command? <span class="badge game">game</span></div>
+  <h2>Pick the right tool for the job</h2>
+  <div id="cmd-game" class="panel" style="max-width:1000px;margin:0 auto"></div>
+  <aside class="notes">5 min.</aside>
+</section>
+
+<!-- 6 · Download time -->
+<section>
+  <div class="kicker">Planning <span class="badge">interactive</span> <span class="badge math">maths</span></div>
+  <h2>How long will it take?</h2>
+  <div class="cols">
+    <div class="widget">
+      <div class="slider-row"><span>data size</span><input type="range" id="dt-s" min="-1" max="4" step="0.05" value="1.7"><b id="dt-s-v"></b></div>
+      <div class="slider-row"><span>network speed</span><input type="range" id="dt-v" min="0" max="4" step="0.05" value="2"><b id="dt-v-v"></b></div>
+      <div class="stat-row"><div class="stat"><b id="dt-t"></b><span>download time</span></div></div>
+      <div class="panel" id="dt-q" style="margin-top:0.4em"></div>
+    </div>
+    <div class="small">
+      <p>File sizes are in <b>bytes</b> (B); network speeds in <b>bits</b> per second (bit/s). 1 byte = 8 bits.</p>
+      $$t = \frac{\text{size (bytes)} \times 8}{\text{speed (bit/s)}}$$
+      <p>The whole PRJNA229998 project is about 50 GB (16 runs; you'll total it in the notebook).</p>
+      <p class="tiny">Real transfers are slower than the line speed (shared networks, server limits). Plan for ×2.</p>
+    </div>
+  </div>
+  <aside class="notes">4 min. Watch the classic mistake: MB vs Mb (megabytes vs megabits): a factor of 8.</aside>
+</section>
+
+<!-- 7 · Checksums -->
+<section>
+  <div class="kicker">Did it arrive intact? <span class="badge">interactive</span> <span class="badge math">maths</span></div>
+  <h2>Checksums: a fingerprint of a file</h2>
+  <div class="cols">
+    <div class="widget">
+      type anything: <input type="text" id="hash-in" value="GATTACA">
+      <div class="stat-row"><div class="stat" style="flex:1"><b id="hash-out" class="mono" style="font-size:1em;word-break:break-all"></b><span>MD5 fingerprint (128 bits, 32 hex characters)</span></div></div>
+      <p>Change one letter, even <code>GATTACA</code> → <code>GATTACC</code>, and the whole fingerprint changes.</p>
+      <p class="small">Real file (SRR41113426_1.fastq.gz):</p>
+      <p class="mono small">ENA says&nbsp;&nbsp;&nbsp;6ca863749adaa842b3316d37e93934ed<br>1 bit flipped f5cf1a1a45f99f7df745af0d0dc0f3ec</p>
+    </div>
+    <div class="small">
+      <ul>
+        <li>A <b>hash function</b> turns any amount of data into a short, fixed-size fingerprint.</li>
+        <li>Same input → always the same fingerprint; tiny change → completely different one.</li>
+        <li>Databases publish the MD5 of each file; after downloading, compute yours (<code>md5sum file</code>) and compare.</li>
+        <li>\(2^{128} \approx 3.4\times10^{38}\) possible fingerprints: an accidental match is (practically) impossible: the birthday problem from 2.3 again.</li>
+      </ul>
+      <p class="tiny">MD5 is fine for catching accidental corruption, but not for security against deliberate tampering (use SHA-256 there).</p>
+    </div>
+  </div>
+  <aside class="notes">4 min. The widget computes real MD5 in the browser. md5("GATTACA") can be checked in the notebook with hashlib.</aside>
+</section>
+
+<!-- 8 · FileZilla -->
+<section>
+  <div class="kicker">The graphical way <span class="badge bio">practice</span></div>
+  <h2>FTP with FileZilla</h2>
+  <div class="cols w60">
+    <svg viewBox="0 0 640 330" width="100%" class="fz">
+      <rect x="5" y="5" width="630" height="320" rx="10" fill="#f4f6fa" stroke="#9aa3b2"/>
+      <rect x="5" y="5" width="630" height="26" rx="10" fill="#dde2ea"/><text x="18" y="23" font-weight="700">FileZilla (schematic)</text>
+      <g transform="translate(15,40)"><text x="0" y="16">Host:</text><rect x="38" y="2" width="170" height="20" rx="4" fill="#fff" stroke="#9aa3b2"/><text x="44" y="16" font-family="JetBrains Mono" font-size="11">ftp.sra.ebi.ac.uk</text>
+        <text x="220" y="16">User:</text><rect x="256" y="2" width="90" height="20" rx="4" fill="#fff" stroke="#9aa3b2"/><text x="262" y="16" font-family="JetBrains Mono" font-size="11">anonymous</text>
+        <text x="358" y="16">Port:</text><rect x="392" y="2" width="36" height="20" rx="4" fill="#fff" stroke="#9aa3b2"/><text x="400" y="16" font-family="JetBrains Mono" font-size="11">21</text>
+        <rect x="440" y="0" width="100" height="24" rx="5" fill="#6b4fd8"/><text x="458" y="16" fill="#fff" font-weight="700">Quickconnect</text></g>
+      <rect x="15" y="78" width="300" height="236" rx="6" fill="#fff" stroke="#dde2ea"/><text x="25" y="98" font-weight="700">Local site (your computer)</text>
+      <text x="25" y="122">📁 Documents/</text><text x="25" y="144">📁 Documents/uacb604/</text><text x="45" y="166">📄 README.txt</text>
+      <rect x="325" y="78" width="300" height="236" rx="6" fill="#fff" stroke="#dde2ea"/><text x="335" y="98" font-weight="700">Remote site (the server)</text>
+      <text x="335" y="122" font-family="JetBrains Mono" font-size="11">/vol1/fastq/SRR411/026/SRR41113426/</text>
+      <text x="345" y="148">📄 SRR41113426_1.fastq.gz   817 KB</text><text x="345" y="170">📄 SRR41113426_2.fastq.gz   1.0 MB</text>
+      <path d="M330 200 C 250 230, 250 230, 170 200" fill="none" stroke="#2e9e5b" stroke-width="3" marker-end="url(#fzarr)"/>
+      <defs><marker id="fzarr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#2e9e5b"/></marker></defs>
+      <text x="250" y="250" text-anchor="middle" fill="#2e9e5b" font-weight="700">drag to download</text>
+    </svg>
+    <div class="small">
+      <ol>
+        <li>Install FileZilla (free).</li>
+        <li>Host <span class="mono">ftp.sra.ebi.ac.uk</span>, user <span class="mono">anonymous</span>, no password, port 21; click Quickconnect.</li>
+        <li>Navigate the remote side to the run's folder (from ENA's <span class="mono">fastq_ftp</span> field).</li>
+        <li>Drag files to your computer.</li>
+      </ol>
+      <p>Good for browsing and occasional downloads. For many files, a <b>script</b> (wget loop) is faster and records exactly what you did.</p>
+    </div>
+  </div>
+  <aside class="notes">3 min. If the campus blocks FTP (port 21), use the https:// links instead.</aside>
+</section>
+
+<!-- 9 · Data hygiene -->
+<section>
+  <div class="kicker">Good habits <span class="badge bio">practice</span></div>
+  <h2>Treat raw data as read-only</h2>
+  <div class="cols">
+    <div class="panel small">
+      <h3>Do</h3>
+      <ul>
+        <li>Keep a <b>README</b>: accessions, dates, download commands</li>
+        <li>Save the published <b>checksums</b> and verify them</li>
+        <li>Download with a <b>script</b>, so it can be repeated</li>
+        <li>Keep raw files untouched, in their own folder (make them read-only)</li>
+      </ul>
+    </div>
+    <div class="panel small">
+      <h3>Don't</h3>
+      <ul>
+        <li>Rename or edit raw FASTQ files by hand</li>
+        <li>Unzip huge FASTQ files without need: most tools read <code>.gz</code> directly</li>
+        <li>Mix assemblies or versions without writing down which</li>
+        <li>Trust a download you haven't checked</li>
+      </ul>
+    </div>
+  </div>
+  <p class="tiny">Following Buffalo, <i>Bioinformatics Data Skills</i>, ch. 2 and 6.</p>
+  <aside class="notes">2 min.</aside>
+</section>
+
+<!-- 10 · Quiz -->
+<section>
+  <div class="kicker">Exit quiz <span class="badge game">game</span></div>
+  <h2>Four questions</h2>
+  <div class="cols">
+    <div class="panel" id="q1"></div><div class="panel" id="q2"></div>
+    <div class="panel" id="q3"></div><div class="panel" id="q4"></div>
+  </div>
+</section>
+
+<!-- 11 · Unit wrap-up -->
+<section>
+  <div class="kicker">End of Unit 2</div>
+  <h2>Unit 2 in one slide</h2>
+  <table class="tbl" style="font-size:0.56em">
+    <tr><th>Lecture</th><th>Biology / practice</th><th>Maths</th></tr>
+    <tr><td>2.1</td><td>Sanger chain termination</td><td>geometric lengths, Phred \(Q=-10\log_{10}p\), optimum \(q=1/L\)</td></tr>
+    <tr><td>2.2</td><td>Illumina sequencing by synthesis</td><td>phasing decay \((1-\varepsilon)^n\), expected errors, coverage \(NL/G\)</td></tr>
+    <tr><td>2.3</td><td>PacBio, Nanopore, linked reads</td><td>binomial majority vote, N50, birthday problem</td></tr>
+    <tr><td>2.4</td><td>FASTA, GenBank, EMBL, XML, FASTQ, fast5</td><td>ASCII encoding, file-size arithmetic</td></tr>
+    <tr><td>2.5</td><td>SRA, accessions, wget, FTP</td><td>bits vs bytes, checksums</td></tr>
+  </table>
+  <div class="cols" style="margin-top:0.5em">
+    <div class="panel small"><b>Notebook (Colab, Python + shell):</b> <a href="https://colab.research.google.com/github/mbsai/UACB604-Computational-Genomics/blob/main/unit02/notebooks/2.5_data_retrieval.ipynb" target="_blank">2.5_data_retrieval.ipynb</a><br>Query ENA, total a project, download a run with wget, verify MD5.</div>
+    <div class="panel small"><b>Reading:</b> Buffalo, ch. 6 · Pevsner, ch. 2<br><b>Next: Unit 3</b>, Linux and R for genomics.</div>
+  </div>
+</section>
+
+</div></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.1.0/reveal.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.1.0/plugin/math/math.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.1.0/plugin/notes/notes.min.js"></script>
+<script src="../assets/js/live.js"></script>
+<script src="../assets/js/course.js"></script>
+<script src="../assets/js/md5.js"></script>
+<script>
+CG.initDeck();
+var $ = function (id) { return document.getElementById(id); };
+$('title-dna').innerHTML = CG.colorSeq(CG.randomSeq(70));
+
+CG.matchGame($('ladder'), [
+  ['PRJNA229998', 'BioProject: the whole study'],
+  ['SAMN02422669', 'BioSample: one biological sample'],
+  ['SRX384345', 'Experiment: one sequencing library'],
+  ['SRR1039508', 'Run: the reads (FASTQ files)'],
+  ['DRR242229', 'Run deposited at DDBJ (Japan)']
+], { id: 'ladder', label: 'Accession', leftClass: 'mono' });
+
+CG.cardGame($('cmd-game'), [
+  { html: 'Download a file from a URL and keep its name', options: ['wget URL', 'cat URL', 'md5sum URL'], answer: 0, explain: '<code>wget</code> saves the file under its remote name.' },
+  { html: 'With curl, save the file under its remote name', options: ['curl URL', 'curl -O URL', 'curl -s URL'], answer: 1, explain: 'Plain <code>curl URL</code> prints to the screen; <code>-O</code> saves to a file.' },
+  { html: 'Check that a downloaded file is intact', options: ['gzip file', 'md5sum file', 'head file'], answer: 1, explain: 'Compare with the published MD5.' },
+  { html: 'Look at the first read of a .fastq.gz without unzipping it', options: ['cat file.fastq.gz | head -4', 'zcat file.fastq.gz | head -4', 'head -4 file.fastq.gz'], answer: 1, explain: '<code>zcat</code> decompresses on the fly; cat/head would show compressed bytes.' },
+  { html: 'Convert an NCBI SRA run into FASTQ files', options: ['fasterq-dump', 'wget', 'FileZilla'], answer: 0, explain: 'From the SRA Toolkit (after <code>prefetch</code>).' },
+  { html: 'Browse an FTP server with a graphical window', options: ['zcat', 'FileZilla', 'fasterq-dump'], answer: 1, explain: 'FileZilla is a free graphical FTP/SFTP client.' }
+], { id: 'cmd', label: 'Which command' });
+
+// ---------- Download time ----------
+(function () {
+  function draw() {
+    var GB = Math.pow(10, +$('dt-s').value), mbps = Math.pow(10, +$('dt-v').value);
+    $('dt-s-v').textContent = GB < 1 ? Math.round(GB * 1000) + ' MB' : (GB < 10 ? GB.toFixed(1) : Math.round(GB)) + ' GB';
+    $('dt-v-v').textContent = mbps < 10 ? mbps.toFixed(1) + ' Mbit/s' : Math.round(mbps) + ' Mbit/s';
+    var s = GB * 1e9 * 8 / (mbps * 1e6);
+    $('dt-t').textContent = s < 90 ? Math.round(s) + ' s' : s < 5400 ? Math.round(s / 60) + ' min' : s < 172800 ? (s / 3600).toFixed(1) + ' hours' : (s / 86400).toFixed(1) + ' days';
+  }
+  $('dt-s').addEventListener('input', draw); $('dt-v').addEventListener('input', draw); draw();
+})();
+CG.mcq($('dt-q'), { id: 'dl-time', q: '50 GB at 100 Mbit/s takes about…',
+  options: ['4 minutes', '67 minutes', '8 hours'], answer: 1, explain: '50 × 10<sup>9</sup> × 8 / 10<sup>8</sup> = 4,000 s ≈ 67 min.' });
+
+// ---------- MD5 widget ----------
+(function () {
+  function draw() { $('hash-out').textContent = md5($('hash-in').value); }
+  $('hash-in').addEventListener('input', draw); draw();
+})();
+
+// ---------- Quiz ----------
+CG.mcq($('q1'), { id: 'quiz1', q: '1. Which accession points to the actual FASTQ files?',
+  options: ['PRJNA…', 'SAMN…', 'SRR…'], answer: 2, explain: 'Runs (SRR/ERR/DRR) hold the reads.' });
+CG.mcq($('q2'), { id: 'quiz2', q: '2. A file is 800 MB. How many megabits is that?',
+  options: ['100 Mb', '800 Mb', '6,400 Mb'], answer: 2, explain: '× 8 bits per byte.' });
+CG.mcq($('q3'), { id: 'quiz3', q: '3. Your md5sum differs from the one ENA publishes. You should…',
+  options: ['use the file anyway', 'download it again', 'rename it'], answer: 1, explain: 'Any difference means the file changed in transit.' });
+CG.mcq($('q4'), { id: 'quiz4', q: '4. Best way to download 200 runs reproducibly?',
+  options: ['click each link in a browser', 'a script looping over accessions with wget', 'FileZilla drag and drop'], answer: 1, explain: 'A script is repeatable and records exactly what was fetched.' });
+</script>
+</body>
+</html>
