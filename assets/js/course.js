@@ -169,11 +169,13 @@
   }
 
   // ---------- Website tour: tabs of annotated screenshots ----------
-  // sites: [{label, img, url, date, legend: ['what ① shows', ...], note}]
+  // sites: [{label, img, url, date, legend: ['what ① shows', ...], note, caption, optional}]
+  // opts.compact: legend under the picture (for a tour inside half a slide)
   // A tab whose image is missing is hidden, so a hand-taken screenshot can be
   // dropped into assets/img/screens/ later and appears without editing the deck.
-  function siteTour(el, sites) {
-    el.classList.add('tour');
+  function siteTour(el, sites, opts) {
+    opts = opts || {};
+    el.classList.add('tour'); if (opts.compact) el.classList.add('compact');
     var tabs = document.createElement('div'); tabs.className = 'tour-tabs';
     var body = document.createElement('div'); body.className = 'tour-body';
     body.innerHTML = '<figure class="shot"><img alt=""><figcaption class="tiny"></figcaption></figure><div class="tour-legend small"></div>';
@@ -185,7 +187,7 @@
       btns.forEach(function (b, j) { b.classList.toggle('chosen', j === k); });
       img.src = s.img; img.alt = 'Screenshot: ' + s.label;
       var host = s.url.replace(/^https?:\/\//, '').split('/')[0];
-      cap.innerHTML = 'Screenshot of <a href="' + s.url + '" target="_blank" rel="noopener">' + host + '</a>' + (s.date ? ', ' + s.date : '') + ' · click to enlarge';
+      cap.innerHTML = s.caption ? s.caption + ' · click to enlarge' : 'Screenshot of <a href="' + s.url + '" target="_blank" rel="noopener">' + host + '</a>' + (s.date ? ', ' + s.date : '') + ' · click to enlarge';
       leg.innerHTML = (s.legend || []).map(function (t, i) {
         return '<div class="tour-item"><span class="num">' + (i + 1) + '</span><span>' + t + '</span></div>';
       }).join('') + (s.note ? '<div class="callout q">' + s.note + '</div>' : '');

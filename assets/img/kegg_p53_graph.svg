@@ -1,0 +1,139 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 554" font-family="Helvetica, Arial, sans-serif">
+<rect width="100%" height="100%" fill="#fff"/>
+<defs><marker id="mactivation" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="5.5" markerHeight="5.5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#2e9e5b"/></marker><marker id="minhibition" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="5.5" markerHeight="5.5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#d0453f"/></marker><marker id="mexpression" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="5.5" markerHeight="5.5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#9aa3b2"/></marker><marker id="mother" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="5.5" markerHeight="5.5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#9aa3b2"/></marker><marker id="bar" viewBox="0 0 4 12" refX="4" refY="6" markerWidth="4" markerHeight="10" orient="auto"><rect width="3" height="12" fill="#d0453f"/></marker></defs>
+<line x1="619.8" y1="321.8" x2="618.9" y2="349.1" stroke="#2e9e5b" stroke-width="2.2" marker-end="url(#mactivation)" opacity="0.85"/>
+<line x1="613.0" y1="315.1" x2="480.2" y2="320.5" stroke="#2e9e5b" stroke-width="2.2" marker-end="url(#mactivation)" opacity="0.85"/>
+<line x1="613.8" y1="355.0" x2="479.7" y2="326.4" stroke="#2e9e5b" stroke-width="2.2" marker-end="url(#mactivation)" opacity="0.85"/>
+<line x1="644.2" y1="346.2" x2="590.1" y2="373.0" stroke="#2e9e5b" stroke-width="2.2" marker-end="url(#mactivation)" opacity="0.85"/>
+<line x1="643.5" y1="342.3" x2="480.1" y2="324.1" stroke="#2e9e5b" stroke-width="2.2" marker-end="url(#mactivation)" opacity="0.85"/>
+<line x1="579.2" y1="374.2" x2="478.3" y2="330.9" stroke="#2e9e5b" stroke-width="2.2" marker-end="url(#mactivation)" opacity="0.85"/>
+<line x1="477.3" y1="327.8" x2="629.0" y2="373.8" stroke="#9aa3b2" stroke-width="1.1" marker-end="url(#mexpression)" opacity="0.85"/>
+<line x1="452.4" y1="343.1" x2="441.4" y2="404.4" stroke="#9aa3b2" stroke-width="1.1" marker-end="url(#mexpression)" opacity="0.85"/>
+<line x1="435.5" y1="328.7" x2="295.6" y2="377.5" stroke="#9aa3b2" stroke-width="1.1" marker-end="url(#mexpression)" opacity="0.85"/>
+<line x1="467.4" y1="340.4" x2="498.1" y2="392.9" stroke="#9aa3b2" stroke-width="1.1" marker-end="url(#mexpression)" opacity="0.85"/>
+<line x1="434.7" y1="326.0" x2="264.5" y2="361.6" stroke="#9aa3b2" stroke-width="1.1" marker-end="url(#mexpression)" opacity="0.85"/>
+<line x1="452.6" y1="343.1" x2="446.0" y2="381.8" stroke="#9aa3b2" stroke-width="1.1" marker-end="url(#mexpression)" opacity="0.85"/>
+<line x1="476.6" y1="329.7" x2="523.4" y2="348.8" stroke="#9aa3b2" stroke-width="1.1" marker-end="url(#mexpression)" opacity="0.85"/>
+<line x1="441.4" y1="337.7" x2="393.5" y2="389.8" stroke="#9aa3b2" stroke-width="1.1" marker-end="url(#mexpression)" opacity="0.85"/>
+<line x1="470.6" y1="304.8" x2="525.1" y2="241.5" stroke="#9aa3b2" stroke-width="1.1" marker-end="url(#mexpression)" opacity="0.85"/>
+<line x1="478.3" y1="321.3" x2="679.4" y2="320.1" stroke="#9aa3b2" stroke-width="1.1" marker-end="url(#mexpression)" opacity="0.85"/>
+<line x1="437.3" y1="332.6" x2="350.1" y2="383.8" stroke="#9aa3b2" stroke-width="1.1" marker-end="url(#mexpression)" opacity="0.85"/>
+<line x1="472.0" y1="336.8" x2="509.0" y2="372.6" stroke="#9aa3b2" stroke-width="1.1" marker-end="url(#mexpression)" opacity="0.85"/>
+<line x1="434.4" y1="323.6" x2="275.4" y2="338.9" stroke="#9aa3b2" stroke-width="1.1" marker-end="url(#mexpression)" opacity="0.85"/>
+<line x1="450.4" y1="342.6" x2="447.5" y2="353.3" stroke="#9aa3b2" stroke-width="1.1" marker-end="url(#mexpression)" opacity="0.85"/>
+<line x1="437.3" y1="332.6" x2="384.5" y2="363.8" stroke="#9aa3b2" stroke-width="1.1" marker-end="url(#mexpression)" opacity="0.85"/>
+<line x1="441.8" y1="304.9" x2="386.4" y2="241.3" stroke="#9aa3b2" stroke-width="1.1" marker-end="url(#mexpression)" opacity="0.85"/>
+<line x1="434.3" y1="321.8" x2="232.2" y2="324.6" stroke="#9aa3b2" stroke-width="1.1" marker-end="url(#mexpression)" opacity="0.85"/>
+<line x1="434.9" y1="326.7" x2="325.7" y2="353.7" stroke="#9aa3b2" stroke-width="1.1" marker-end="url(#mexpression)" opacity="0.85"/>
+<line x1="438.6" y1="308.3" x2="413.3" y2="289.4" stroke="#9aa3b2" stroke-width="1.1" marker-end="url(#mexpression)" opacity="0.85"/>
+<line x1="434.5" y1="324.4" x2="368.8" y2="333.2" stroke="#9aa3b2" stroke-width="1.1" marker-end="url(#mexpression)" opacity="0.85"/>
+<line x1="434.3" y1="321.0" x2="297.0" y2="318.1" stroke="#9aa3b2" stroke-width="1.1" marker-end="url(#mexpression)" opacity="0.85"/>
+<line x1="434.4" y1="319.4" x2="260.3" y2="302.8" stroke="#9aa3b2" stroke-width="1.1" marker-end="url(#mexpression)" opacity="0.85"/>
+<line x1="434.5" y1="317.9" x2="356.1" y2="305.1" stroke="#9aa3b2" stroke-width="1.1" marker-end="url(#mexpression)" opacity="0.85"/>
+<line x1="435.2" y1="315.1" x2="325.0" y2="282.2" stroke="#9aa3b2" stroke-width="1.1" marker-end="url(#mexpression)" opacity="0.85"/>
+<line x1="434.7" y1="317.2" x2="276.7" y2="286.2" stroke="#9aa3b2" stroke-width="1.1" marker-end="url(#mexpression)" opacity="0.85"/>
+<line x1="437.8" y1="309.5" x2="372.6" y2="267.1" stroke="#9aa3b2" stroke-width="1.1" marker-end="url(#mexpression)" opacity="0.85"/>
+<line x1="446.8" y1="301.6" x2="428.3" y2="262.5" stroke="#9aa3b2" stroke-width="1.1" marker-end="url(#mexpression)" opacity="0.85"/>
+<line x1="459.4" y1="299.7" x2="466.1" y2="253.1" stroke="#9aa3b2" stroke-width="1.1" marker-end="url(#mexpression)" opacity="0.85"/>
+<line x1="476.8" y1="313.5" x2="558.8" y2="281.9" stroke="#9aa3b2" stroke-width="1.1" marker-end="url(#mexpression)" opacity="0.85"/>
+<line x1="477.9" y1="317.5" x2="539.9" y2="306.3" stroke="#9aa3b2" stroke-width="1.1" marker-end="url(#mexpression)" opacity="0.85"/>
+<line x1="471.8" y1="305.8" x2="513.9" y2="263.4" stroke="#9aa3b2" stroke-width="1.1" marker-end="url(#mexpression)" opacity="0.85"/>
+<line x1="475.7" y1="311.2" x2="574.0" y2="259.7" stroke="#9aa3b2" stroke-width="1.1" marker-end="url(#mexpression)" opacity="0.85"/>
+<line x1="477.2" y1="314.8" x2="615.3" y2="271.2" stroke="#9aa3b2" stroke-width="1.1" marker-end="url(#mexpression)" opacity="0.85"/>
+<line x1="478.2" y1="319.5" x2="676.8" y2="302.1" stroke="#9aa3b2" stroke-width="1.1" marker-end="url(#mexpression)" opacity="0.85"/>
+<line x1="467.9" y1="302.8" x2="478.1" y2="286.4" stroke="#9aa3b2" stroke-width="1.1" marker-end="url(#mexpression)" opacity="0.85"/>
+<line x1="477.9" y1="317.3" x2="621.8" y2="289.6" stroke="#9aa3b2" stroke-width="1.1" marker-end="url(#mexpression)" opacity="0.85"/>
+<line x1="764.3" y1="424.3" x2="646.0" y2="379.6" stroke="#d0453f" stroke-width="2.2" marker-end="url(#bar)" opacity="0.85"/>
+<line x1="563.5" y1="392.9" x2="628.8" y2="378.4" stroke="#2e9e5b" stroke-width="2.2" marker-end="url(#mactivation)" opacity="0.85"/>
+<line x1="551.0" y1="390.3" x2="475.7" y2="335.6" stroke="#d0453f" stroke-width="2.2" marker-end="url(#bar)" opacity="0.85"/>
+<line x1="445.1" y1="417.8" x2="510.5" y2="474.1" stroke="#d0453f" stroke-width="2.2" marker-end="url(#bar)" opacity="0.85"/>
+<line x1="433.9" y1="416.9" x2="347.5" y2="470.8" stroke="#d0453f" stroke-width="2.2" marker-end="url(#bar)" opacity="0.85"/>
+<line x1="284.1" y1="380.8" x2="135.6" y2="410.4" stroke="#d0453f" stroke-width="2.2" marker-end="url(#bar)" opacity="0.85"/>
+<line x1="253.0" y1="364.8" x2="135.2" y2="409.0" stroke="#d0453f" stroke-width="2.2" marker-end="url(#bar)" opacity="0.85"/>
+<line x1="220.2" y1="324.9" x2="47.0" y2="331.9" stroke="#d0453f" stroke-width="2.2" marker-end="url(#bar)" opacity="0.85"/>
+<line x1="533.4" y1="232.8" x2="597.8" y2="174.4" stroke="#9aa3b2" stroke-width="1.1" marker-end="url(#mother)" opacity="0.85"/>
+<line x1="309.8" y1="259.2" x2="434.2" y2="312.1" stroke="#9aa3b2" stroke-width="1.1" marker-end="url(#mexpression)" opacity="0.85"/>
+<line x1="300.6" y1="255.3" x2="189.1" y2="207.7" stroke="#9aa3b2" stroke-width="1.1" marker-end="url(#mexpression)" opacity="0.85"/>
+<line x1="187.4" y1="203.6" x2="294.7" y2="171.4" stroke="#9aa3b2" stroke-width="1.1" marker-end="url(#mother)" opacity="0.85"/>
+<line x1="378.0" y1="232.8" x2="306.8" y2="173.9" stroke="#9aa3b2" stroke-width="1.1" marker-end="url(#mother)" opacity="0.85"/>
+<line x1="142.9" y1="135.5" x2="294.6" y2="168.0" stroke="#9aa3b2" stroke-width="1.1" marker-end="url(#mother)" opacity="0.85"/>
+<line x1="305.2" y1="166.1" x2="369.8" y2="109.1" stroke="#2e9e5b" stroke-width="2.2" marker-end="url(#mactivation)" opacity="0.85"/>
+<line x1="383.6" y1="103.1" x2="541.2" y2="103.9" stroke="#2e9e5b" stroke-width="2.2" marker-end="url(#mactivation)" opacity="0.85"/>
+<line x1="342.8" y1="44.3" x2="372.1" y2="95.3" stroke="#2e9e5b" stroke-width="2.2" marker-end="url(#mactivation)" opacity="0.85"/>
+<line x1="599.8" y1="165.8" x2="552.7" y2="109.3" stroke="#2e9e5b" stroke-width="2.2" marker-end="url(#mactivation)" opacity="0.85"/>
+<line x1="688.8" y1="300.7" x2="838.8" y2="278.3" stroke="#d0453f" stroke-width="2.2" marker-end="url(#bar)" opacity="0.85"/>
+<line x1="688.7" y1="302.3" x2="853.1" y2="329.8" stroke="#d0453f" stroke-width="2.2" marker-end="url(#bar)" opacity="0.85"/>
+<line x1="840.9" y1="278.6" x2="697.1" y2="317.7" stroke="#d0453f" stroke-width="2.2" marker-end="url(#bar)" opacity="0.85"/>
+<line x1="855.0" y1="330.7" x2="697.4" y2="320.6" stroke="#d0453f" stroke-width="2.2" marker-end="url(#bar)" opacity="0.85"/>
+<line x1="575.1" y1="332.9" x2="480.1" y2="323.8" stroke="#d0453f" stroke-width="2.2" marker-end="url(#bar)" opacity="0.85"/>
+<circle cx="620.0" cy="314.8" r="7" fill="#d6cff7" stroke="#5b6475" stroke-width="1"><title>ATM</title></circle>
+<text x="629.0" y="318.8" font-size="13" font-weight="600" fill="#1d2433" stroke="#fff" stroke-width="3" paint-order="stroke">ATM</text>
+<circle cx="618.7" cy="356.0" r="5" fill="#e9ecf2" stroke="#5b6475" stroke-width="1"><title>CHEK2</title></circle>
+<circle cx="650.5" cy="343.1" r="7" fill="#d6cff7" stroke="#5b6475" stroke-width="1"><title>ATR</title></circle>
+<text x="659.5" y="347.1" font-size="13" font-weight="600" fill="#1d2433" stroke="#fff" stroke-width="3" paint-order="stroke">ATR</text>
+<circle cx="583.8" cy="376.2" r="5" fill="#e9ecf2" stroke="#5b6475" stroke-width="1"><title>CHEK1</title></circle>
+<circle cx="456.3" cy="321.4" r="22" fill="#6b4fd8" stroke="#5b6475" stroke-width="1"><title>TP53</title></circle>
+<text x="456.3" y="326.4" text-anchor="middle" font-size="14" font-weight="700" fill="#fff">TP53</text>
+<circle cx="769.0" cy="426.1" r="5" fill="#e9ecf2" stroke="#5b6475" stroke-width="1"><title>CDKN2A</title></circle>
+<circle cx="637.6" cy="376.5" r="7" fill="#d6cff7" stroke="#5b6475" stroke-width="1"><title>MDM2</title></circle>
+<text x="646.6" y="380.5" font-size="13" font-weight="600" fill="#1d2433" stroke="#fff" stroke-width="3" paint-order="stroke">MDM2</text>
+<circle cx="556.7" cy="394.4" r="7" fill="#d6cff7" stroke="#5b6475" stroke-width="1"><title>MDM4</title></circle>
+<text x="565.7" y="398.4" font-size="13" font-weight="600" fill="#1d2433" stroke="#fff" stroke-width="3" paint-order="stroke">MDM4</text>
+<circle cx="439.8" cy="413.2" r="7" fill="#d6cff7" stroke="#5b6475" stroke-width="1"><title>CDKN1A</title></circle>
+<text x="448.8" y="417.2" font-size="13" font-weight="600" fill="#1d2433" stroke="#fff" stroke-width="3" paint-order="stroke">CDKN1A</text>
+<circle cx="517.3" cy="480.0" r="7" fill="#d6cff7" stroke="#5b6475" stroke-width="1"><title>CDK4·CCND1</title></circle>
+<text x="526.3" y="484.0" font-size="13" font-weight="600" fill="#1d2433" stroke="#fff" stroke-width="3" paint-order="stroke">CDK4·CCND1</text>
+<circle cx="339.8" cy="475.5" r="7" fill="#d6cff7" stroke="#5b6475" stroke-width="1"><title>CDK2·CCNE1</title></circle>
+<text x="348.8" y="479.5" font-size="13" font-weight="600" fill="#1d2433" stroke="#fff" stroke-width="3" paint-order="stroke">CDK2·CCNE1</text>
+<circle cx="289.0" cy="379.8" r="5" fill="#e9ecf2" stroke="#5b6475" stroke-width="1"><title>SFN</title></circle>
+<circle cx="126.8" cy="412.2" r="7" fill="#d6cff7" stroke="#5b6475" stroke-width="1"><title>CDK1·CCNB1</title></circle>
+<text x="135.8" y="416.2" font-size="13" font-weight="600" fill="#1d2433" stroke="#fff" stroke-width="3" paint-order="stroke">CDK1·CCNB1</text>
+<circle cx="257.7" cy="363.0" r="5" fill="#e9ecf2" stroke="#5b6475" stroke-width="1"><title>GADD45G</title></circle>
+<circle cx="225.2" cy="324.7" r="5" fill="#e9ecf2" stroke="#5b6475" stroke-width="1"><title>IGFBP3</title></circle>
+<circle cx="40.0" cy="332.2" r="5" fill="#e9ecf2" stroke="#5b6475" stroke-width="1"><title>IGF1</title></circle>
+<circle cx="501.7" cy="399.0" r="5" fill="#e9ecf2" stroke="#5b6475" stroke-width="1"><title>RPRM</title></circle>
+<circle cx="444.8" cy="388.7" r="5" fill="#e9ecf2" stroke="#5b6475" stroke-width="1"><title>GTSE1</title></circle>
+<circle cx="529.9" cy="351.4" r="5" fill="#e9ecf2" stroke="#5b6475" stroke-width="1"><title>FAS</title></circle>
+<circle cx="388.8" cy="395.0" r="5" fill="#e9ecf2" stroke="#5b6475" stroke-width="1"><title>PIDD1</title></circle>
+<circle cx="529.7" cy="236.2" r="5" fill="#e9ecf2" stroke="#5b6475" stroke-width="1"><title>TNFRSF10B</title></circle>
+<circle cx="688.4" cy="320.1" r="7" fill="#d6cff7" stroke="#5b6475" stroke-width="1"><title>BAX</title></circle>
+<text x="697.4" y="324.1" font-size="13" font-weight="600" fill="#1d2433" stroke="#fff" stroke-width="3" paint-order="stroke">BAX</text>
+<circle cx="344.1" cy="387.3" r="5" fill="#e9ecf2" stroke="#5b6475" stroke-width="1"><title>PMAIP1</title></circle>
+<circle cx="305.1" cy="257.2" r="5" fill="#e9ecf2" stroke="#5b6475" stroke-width="1"><title>BBC3</title></circle>
+<circle cx="182.6" cy="205.0" r="5" fill="#e9ecf2" stroke="#5b6475" stroke-width="1"><title>TP53AIP1</title></circle>
+<circle cx="514.0" cy="377.5" r="5" fill="#e9ecf2" stroke="#5b6475" stroke-width="1"><title>EI24</title></circle>
+<circle cx="268.4" cy="339.5" r="5" fill="#e9ecf2" stroke="#5b6475" stroke-width="1"><title>SHISA5</title></circle>
+<circle cx="445.6" cy="360.0" r="5" fill="#e9ecf2" stroke="#5b6475" stroke-width="1"><title>PERP</title></circle>
+<circle cx="378.5" cy="367.4" r="5" fill="#e9ecf2" stroke="#5b6475" stroke-width="1"><title>ZMAT3</title></circle>
+<circle cx="381.8" cy="236.0" r="5" fill="#e9ecf2" stroke="#5b6475" stroke-width="1"><title>SIAH1</title></circle>
+<circle cx="318.9" cy="355.3" r="5" fill="#e9ecf2" stroke="#5b6475" stroke-width="1"><title>SERPINE1</title></circle>
+<circle cx="407.7" cy="285.2" r="5" fill="#e9ecf2" stroke="#5b6475" stroke-width="1"><title>ADGRB1</title></circle>
+<circle cx="361.8" cy="334.2" r="5" fill="#e9ecf2" stroke="#5b6475" stroke-width="1"><title>CD82</title></circle>
+<circle cx="290.0" cy="318.0" r="5" fill="#e9ecf2" stroke="#5b6475" stroke-width="1"><title>THBS1</title></circle>
+<circle cx="253.3" cy="302.2" r="5" fill="#e9ecf2" stroke="#5b6475" stroke-width="1"><title>SERPINB5</title></circle>
+<circle cx="349.2" cy="303.9" r="5" fill="#e9ecf2" stroke="#5b6475" stroke-width="1"><title>DDB2</title></circle>
+<circle cx="318.3" cy="280.2" r="5" fill="#e9ecf2" stroke="#5b6475" stroke-width="1"><title>RRM2B</title></circle>
+<circle cx="269.9" cy="284.9" r="5" fill="#e9ecf2" stroke="#5b6475" stroke-width="1"><title>SESN3</title></circle>
+<circle cx="366.7" cy="263.3" r="5" fill="#e9ecf2" stroke="#5b6475" stroke-width="1"><title>PTEN</title></circle>
+<circle cx="425.2" cy="256.2" r="5" fill="#e9ecf2" stroke="#5b6475" stroke-width="1"><title>TSC2</title></circle>
+<circle cx="467.0" cy="246.1" r="5" fill="#e9ecf2" stroke="#5b6475" stroke-width="1"><title>STEAP3</title></circle>
+<circle cx="565.3" cy="279.4" r="5" fill="#e9ecf2" stroke="#5b6475" stroke-width="1"><title>COP1</title></circle>
+<circle cx="546.8" cy="305.1" r="5" fill="#e9ecf2" stroke="#5b6475" stroke-width="1"><title>RCHY1</title></circle>
+<circle cx="518.8" cy="258.4" r="5" fill="#e9ecf2" stroke="#5b6475" stroke-width="1"><title>CCNG1</title></circle>
+<circle cx="580.2" cy="256.5" r="5" fill="#e9ecf2" stroke="#5b6475" stroke-width="1"><title>PPM1D</title></circle>
+<circle cx="622.0" cy="269.1" r="5" fill="#e9ecf2" stroke="#5b6475" stroke-width="1"><title>TP73</title></circle>
+<circle cx="138.0" cy="134.5" r="5" fill="#e9ecf2" stroke="#5b6475" stroke-width="1"><title>BID</title></circle>
+<circle cx="301.4" cy="169.4" r="5" fill="#e9ecf2" stroke="#5b6475" stroke-width="1"><title>CYCS</title></circle>
+<circle cx="376.6" cy="103.1" r="7" fill="#d6cff7" stroke="#5b6475" stroke-width="1"><title>CASP9</title></circle>
+<text x="385.6" y="107.1" font-size="13" font-weight="600" fill="#1d2433" stroke="#fff" stroke-width="3" paint-order="stroke">CASP9</text>
+<circle cx="340.3" cy="40.0" r="5" fill="#e9ecf2" stroke="#5b6475" stroke-width="1"><title>APAF1</title></circle>
+<circle cx="548.2" cy="103.9" r="5" fill="#e9ecf2" stroke="#5b6475" stroke-width="1"><title>CASP3</title></circle>
+<circle cx="603.0" cy="169.7" r="5" fill="#e9ecf2" stroke="#5b6475" stroke-width="1"><title>CASP8</title></circle>
+<circle cx="683.8" cy="301.5" r="5" fill="#e9ecf2" stroke="#5b6475" stroke-width="1"><title>SIVA1</title></circle>
+<circle cx="481.8" cy="280.5" r="5" fill="#e9ecf2" stroke="#5b6475" stroke-width="1"><title>AIFM2</title></circle>
+<circle cx="845.7" cy="277.3" r="5" fill="#e9ecf2" stroke="#5b6475" stroke-width="1"><title>BCL2L1</title></circle>
+<circle cx="860.0" cy="331.0" r="5" fill="#e9ecf2" stroke="#5b6475" stroke-width="1"><title>BCL2</title></circle>
+<circle cx="628.7" cy="288.3" r="5" fill="#e9ecf2" stroke="#5b6475" stroke-width="1"><title>ZNF385A</title></circle>
+<circle cx="580.0" cy="333.4" r="5" fill="#e9ecf2" stroke="#5b6475" stroke-width="1"><title>PPP1R13L</title></circle>
+<g font-size="13" fill="#1d2433"><line x1="40" y1="536" x2="80" y2="536" stroke="#2e9e5b" stroke-width="2.2" marker-end="url(#mactivation)"/><text x="88" y="540">activation / phosphorylation</text><line x1="300" y1="536" x2="340" y2="536" stroke="#d0453f" stroke-width="2.2" marker-end="url(#bar)"/><text x="348" y="540">inhibition</text><line x1="450" y1="536" x2="490" y2="536" stroke="#9aa3b2" stroke-width="1.1" marker-end="url(#mexpression)"/><text x="498" y="540">expression (TP53 switches the gene on)</text></g>
+</svg>

@@ -21,6 +21,9 @@ PAGES = {
     # Lecture 1.5
     "ensembl":     "https://www.ensembl.org/Homo_sapiens/Gene/Summary?g=ENSG00000141510",
     "uniprot":     "https://www.uniprot.org/uniprotkb/P04637/entry",
+    "uniprot_seq": "https://www.uniprot.org/uniprotkb/P04637/entry#sequences",
+    "protparam":   "https://web.expasy.org/cgi-bin/protparam/protparam1?P04637@noft@",
+    "kegg_gene":   "https://www.kegg.jp/entry/hsa:7157",
     # Lecture 2.4
     "ena_j02482":  "https://www.ebi.ac.uk/ena/browser/view/J02482",
     # Lecture 2.5

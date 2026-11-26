@@ -192,18 +192,10 @@
   <div class="kicker">Beyond sequences <span class="badge bio">biology</span> <span class="badge math">maths</span></div>
   <h2>Pathways are graphs; proteins have masses</h2>
   <div class="cols">
-    <div class="panel small">
-      <h3>KEGG</h3>
-      <p>A pathway map (e.g. <span class="mono">hsa04115</span>, p53 signalling) is a <b>directed graph</b>: nodes = genes or compounds, edges = activation, inhibition, reaction.</p>
-      <p>TP53 appears in <b>52</b> human KEGG pathways. Graph questions (which genes are hubs? shortest path?) become biology questions.</p>
-    </div>
-    <div class="panel small">
-      <h3>Expasy / UniProt</h3>
-      <p>ProtParam computes a protein's mass from its sequence, the same idea as the peptide calculator in Lecture 1.2, using <b>average</b> residue masses.</p>
-      <p>p53 (UniProt <span class="mono">P04637</span>): 393 amino acids, <b>43,653 Da</b>. In the notebook you'll reproduce that number exactly from the sequence.</p>
-    </div>
+    <div class="panel"><h3 style="margin:0 0 0.2em">KEGG</h3><div id="tour-kegg"></div></div>
+    <div class="panel"><h3 style="margin:0 0 0.2em">UniProt / Expasy</h3><div id="tour-mass"></div></div>
   </div>
-  <aside class="notes">3 min.</aside>
+  <aside class="notes">4 min. Left: the p53 pathway hsa04115 drawn as a graph from KEGG's own relation data (KGML file), plus the KEGG gene entry for TP53 listing its 52 pathways. The official KEGG map isn't copied into the slides (KEGG restricts reuse of map images); the link opens it live. Right: UniProt gives 43,653 Da; ProtParam gives 43,653.18 from the same 393 residues using average masses. The notebook reproduces it.</aside>
 </section>
 
 <!-- 10 · APIs -->
@@ -264,6 +256,19 @@
 <script src="../assets/js/course.js"></script>
 <script>
 CG.initDeck();
+CG.siteTour(document.getElementById('tour-kegg'), [
+  { label: 'p53 pathway as a graph', img: '../assets/img/kegg_p53_graph.svg', url: 'https://www.kegg.jp/pathway/hsa04115',
+    caption: 'Drawn from KEGG’s data for <a href="https://www.kegg.jp/pathway/hsa04115" target="_blank" rel="noopener">hsa04115</a> (open the official map)',
+    legend: ['<b>58 nodes</b> (genes, complexes), <b>65 directed edges</b>: activation, inhibition, expression', 'TP53 has <b>degree 43</b>, a hub: 7 edges in (ATM, ATR, CHEK1/2 activate it; MDM4 inhibits it), 36 out'] },
+  { label: 'KEGG gene entry', img: '../assets/img/screens/kegg_gene.jpg', url: 'https://www.kegg.jp/entry/hsa:7157', date: '26 Nov 2026',
+    legend: ['KEGG ID <span class="mono">hsa:7157</span>: the NCBI Gene ID with a species prefix', 'Pathway list: TP53 is in <b>52</b> human pathways', '<span class="mono">hsa04115</span>, the pathway drawn in the other tab'] }
+], { compact: true });
+CG.siteTour(document.getElementById('tour-mass'), [
+  { label: 'UniProt sequence', img: '../assets/img/screens/uniprot_seq.jpg', url: 'https://www.uniprot.org/uniprotkb/P04637/entry#sequences', date: '26 Nov 2026',
+    legend: ['Length <b>393</b> amino acids', 'Mass <b>43,653 Da</b>: sum of average residue masses + one water', 'An MD5 checksum of the sequence (Lecture 2.5)'] },
+  { label: 'Expasy ProtParam', img: '../assets/img/screens/protparam.jpg', url: 'https://web.expasy.org/protparam/', date: '26 Nov 2026',
+    legend: ['ProtParam run on the same entry, P04637', '393 amino acids', 'Molecular weight <b>43653.18</b>: you reproduce this number in the notebook'] }
+], { compact: true });
 CG.siteTour(document.getElementById('tour-tp53'), [
   { label: 'NCBI Gene', optional: true, img: '../assets/img/screens/ncbi_gene.jpg', url: 'https://www.ncbi.nlm.nih.gov/gene/7157', date: '26 Nov 2026',
     legend: ['Gene ID <b>7157</b>: NCBI’s number for TP53', 'Location on <b>GRCh38</b>: chr17 7,668,421–7,687,490', 'Links out to Ensembl, UniProt, KEGG (the cross-references)'] },

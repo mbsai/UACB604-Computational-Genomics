@@ -137,6 +137,11 @@ pre.file .k { color: #ffd479; } pre.file .c { color: #8fd18f; } pre.file .m { co
 .tour-legend .tour-item { display: flex; gap: 0.5em; align-items: flex-start; margin: 0 0 0.45em; line-height: 1.3; }
 .tour-legend .num { flex: 0 0 1.5em; height: 1.5em; border-radius: 50%; background: #d63384; color: #fff; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; font-size: 0.85em; }
 .tour-legend .callout { font-size: 0.95em; }
+.tour.compact .tour-body { grid-template-columns: 1fr; gap: 0.3em; }
+.tour.compact .shot img { max-height: 300px; }
+.tour.compact .tour-legend { font-size: 0.6em; }
+.tour.compact .tour-legend .tour-item { margin-bottom: 0.25em; }
+.tour.compact .tour-tabs button { font-size: 0.45em; }
 .shot-zoom { position: fixed; inset: 0; z-index: 1000; background: rgba(20,24,33,.88); display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: zoom-out; }
 .shot-zoom img { max-width: 96vw; max-height: 90vh; border-radius: 6px; background: #fff; }
 .shot-zoom span { color: #ccd; font: 14px system-ui, sans-serif; margin-top: 8px; }
